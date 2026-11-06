@@ -3,6 +3,7 @@ import { Atkinson_Hyperlegible } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
+import { SiteFooter, SiteHeader } from "@/components/SiteFrame";
 import theme from "@/theme";
 
 const atkinson = Atkinson_Hyperlegible({
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
+            <SiteHeader />
             {children}
+            <SiteFooter />
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <Container component="main" maxWidth="sm" sx={{ py: 6 }}>
       <Typography variant="h1" color="primary.dark" gutterBottom>
-        FirstStep
+        Find your first step
       </Typography>
       <Paper variant="outlined" sx={{ p: 3, bgcolor: "secondary.light" }}>
         <Typography component="p" variant="body1">

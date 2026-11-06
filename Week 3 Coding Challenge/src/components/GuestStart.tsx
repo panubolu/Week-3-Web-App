@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type Status = "loading" | "ready" | "error";
+type Status = "loading" | "guest" | "saved" | "error";
 
 export default function GuestStart() {
   const [status, setStatus] = useState<Status>("loading");
@@ -16,7 +16,12 @@ export default function GuestStart() {
     setStatus("loading");
     try {
       const response = await fetch("/api/session", { method: "POST" });
-      setStatus(response.ok ? "ready" : "error");
+      if (!response.ok) {
+        setStatus("error");
+        return;
+      }
+      const { isGuest } = await response.json();
+      setStatus(isGuest ? "guest" : "saved");
     } catch {
       setStatus("error");
     }
@@ -35,11 +40,24 @@ export default function GuestStart() {
       {status === "loading" && (
         <Typography role="status">Getting things ready...</Typography>
       )}
-      {status === "ready" && (
+      {status === "guest" && (
         <Typography role="status">
           You&apos;re in, with no sign-up needed. Your progress stays in this
           browser, so clearing your browser data will remove it.
         </Typography>
+      )}
+      {status === "saved" && (
+        <>
+          <Typography role="status" sx={{ mb: 2 }}>
+            You&apos;re signed in. Your progress is saved to your Google
+            account, so you can continue on any device.
+          </Typography>
+          <form action="/auth/sign-out" method="post">
+            <Button type="submit" variant="outlined" color="primary">
+              Sign out
+            </Button>
+          </form>
+        </>
       )}
       {status === "error" && (
         <Alert
