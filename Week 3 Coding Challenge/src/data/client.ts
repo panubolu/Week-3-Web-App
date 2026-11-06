@@ -33,7 +33,12 @@ export async function createDataClient() {
       setAll(cookiesToSet) {
         try {
           for (const { name, value, options } of cookiesToSet) {
-            cookieStore.set(name, value, options);
+            cookieStore.set(name, value, {
+              ...options,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+            });
           }
         } catch {
           // Pages cannot set cookies. Server actions and API routes can.
