@@ -1,6 +1,7 @@
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
+import GuestStart from "@/components/GuestStart";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
           away.
         </Typography>
       </Paper>
+      <GuestStart />
     </Container>
   );
 }
