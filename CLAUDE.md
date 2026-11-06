@@ -21,6 +21,12 @@ This project has four skills in `.claude/skills/`. They are **mandatory**, not o
 4. If a rule cannot be met, say which rule and why. Never skip a rule silently.
 5. When rules conflict, priority is: **Security → Accessibility → UX → Performance**.
 
+## Architecture decisions
+
+Read every ADR in docs/adr before making changes, and write a new ADR for every big decision.
+
+The app and its `docs` folder live inside `Week 3 Coding Challenge`, so the ADRs are at `Week 3 Coding Challenge/docs/adr`.
+
 ## Working in this repository
 
 - Make changes on a branch, never directly on `main`; merge through a pull request.
