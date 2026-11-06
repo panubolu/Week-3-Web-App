@@ -25,5 +25,8 @@ export async function startSession() {
   }
 
   const session = await getOrCreateSession(client, user.id);
-  return { currentStep: session.current_step };
+  return {
+    currentStep: session.current_step,
+    isGuest: user.is_anonymous === true,
+  };
 }
