@@ -31,6 +31,7 @@ export default function Conversation() {
   const started = useRef(false);
   const moveFocus = useRef(false);
   const firstOption = useRef<HTMLButtonElement>(null);
+  const messages = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -62,7 +63,8 @@ export default function Conversation() {
   useEffect(() => {
     if (!moveFocus.current) return;
     moveFocus.current = false;
-    firstOption.current?.focus();
+    // With no options left, focus the messages so it isn't lost.
+    (firstOption.current ?? messages.current)?.focus();
   }, [state]);
 
   async function answer(field: string, value: string, label: string) {
@@ -150,7 +152,14 @@ export default function Conversation() {
         </Box>
       )}
 
-      <Stack spacing={1.5} role="log" aria-live="polite" sx={{ mb: 2 }}>
+      <Stack
+        ref={messages}
+        tabIndex={-1}
+        spacing={1.5}
+        role="log"
+        aria-live="polite"
+        sx={{ mb: 2, outline: "none" }}
+      >
         {!hasAnswers(state) && (
           <>
             <ChatBubble from="firststep">
