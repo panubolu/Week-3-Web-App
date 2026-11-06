@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { ConversationState, Step } from "@/domain/conversation";
 
 export type SessionRow = {
   id: string;
@@ -21,6 +22,16 @@ export type SessionChanges = Pick<
 const COLUMNS =
   "id, user_id, current_step, goal, experience_level, availability, completed, version";
 const UNIQUE_VIOLATION = "23505";
+
+export function toConversationState(session: SessionRow): ConversationState {
+  return {
+    currentStep: session.current_step as Step,
+    goal: session.goal,
+    experience: session.experience_level,
+    availability: session.availability,
+    completed: session.completed,
+  };
+}
 
 export async function findSession(client: SupabaseClient, userId: string) {
   const { data, error } = await client

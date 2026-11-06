@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createDataClient } from "@/data/client";
-import { getOrCreateSession } from "@/data/sessions";
+import { getOrCreateSession, toConversationState } from "@/data/sessions";
 
 /**
  * Steps for: Start a session
@@ -26,7 +26,7 @@ export async function startSession() {
 
   const session = await getOrCreateSession(client, user.id);
   return {
-    currentStep: session.current_step,
+    state: toConversationState(session),
     isGuest: user.is_anonymous === true,
   };
 }

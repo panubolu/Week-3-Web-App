@@ -2,12 +2,15 @@ import "server-only";
 
 import { createDataClient } from "@/data/client";
 import { addStepEvent } from "@/data/step-events";
-import { findSession, saveSession, type SessionRow } from "@/data/sessions";
+import {
+  findSession,
+  saveSession,
+  toConversationState,
+} from "@/data/sessions";
 import {
   decide,
   type ConversationEvent,
   type ConversationState,
-  type Step,
 } from "@/domain/conversation";
 
 export type AnswerResult =
@@ -16,16 +19,6 @@ export type AnswerResult =
 
 // T-13 replaces this with the real filter over approved content.
 const hasMatches = () => true;
-
-function toState(session: SessionRow): ConversationState {
-  return {
-    currentStep: session.current_step as Step,
-    goal: session.goal,
-    experience: session.experience_level,
-    availability: session.availability,
-    completed: session.completed,
-  };
-}
 
 /**
  * Steps for: Answer a question
@@ -44,7 +37,7 @@ export async function answerQuestion(
   const session = await findSession(client, data.user.id);
   if (!session) return { status: "no_session" };
 
-  const decision = decide(toState(session), event, hasMatches);
+  const decision = decide(toConversationState(session), event, hasMatches);
   if (!decision.ok) return { status: decision.reason };
 
   const { next, eventType } = decision;
