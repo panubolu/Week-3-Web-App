@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await answerQuestion(parsed.data);
-    if (result.status === "ok") return NextResponse.json(result.state);
+    if (result.status === "ok") return NextResponse.json(result.view);
 
     const refusal = refusals[result.status];
     return NextResponse.json(
