@@ -7,18 +7,12 @@ import {
   saveSession,
   toConversationState,
 } from "@/data/sessions";
-import {
-  decide,
-  type ConversationEvent,
-  type ConversationState,
-} from "@/domain/conversation";
+import { decide, type ConversationEvent } from "@/domain/conversation";
+import { buildView, hasMatches, type ConversationView } from "./view";
 
 export type AnswerResult =
-  | { status: "ok"; state: ConversationState }
+  | { status: "ok"; view: ConversationView }
   | { status: "no_session" | "conflict" | "not_allowed" | "invalid_value" };
-
-// T-13 replaces this with the real filter over approved content.
-const hasMatches = () => true;
 
 /**
  * Steps for: Answer a question
@@ -57,5 +51,5 @@ export async function answerQuestion(
     eventType,
   });
 
-  return { status: "ok", state: next };
+  return { status: "ok", view: buildView(next) };
 }
