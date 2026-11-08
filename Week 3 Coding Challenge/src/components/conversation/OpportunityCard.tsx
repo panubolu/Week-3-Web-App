@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import type { Card } from "@/actions/view";
 import { tokens } from "@/theme";
 
-type Props = { card: Card; sample: boolean };
+type Props = { card: Card; sample: boolean; onOpen?: (id: string) => void };
 
 function checkedNote(card: Card, sample: boolean) {
   if (sample || !card.lastVerified) {
@@ -16,7 +16,7 @@ function checkedNote(card: Card, sample: boolean) {
   return `From approved Tech Fleet content, last checked ${month}.`;
 }
 
-export default function OpportunityCard({ card, sample }: Props) {
+export default function OpportunityCard({ card, sample, onOpen }: Props) {
   return (
     <Paper component="article" variant="outlined" sx={{ p: 2.5 }}>
       <Typography component="h2" sx={{ fontSize: "1.125rem", fontWeight: 700, mb: 1 }}>
@@ -64,6 +64,7 @@ export default function OpportunityCard({ card, sample }: Props) {
 
       <Link
         href={card.url}
+        onClick={() => onOpen?.(card.id)}
         color="primary.dark"
         sx={{ display: "inline-block", minHeight: 24, lineHeight: "24px", fontWeight: 700 }}
       >

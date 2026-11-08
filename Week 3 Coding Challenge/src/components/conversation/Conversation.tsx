@@ -3,17 +3,16 @@
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ConversationView } from "@/actions/view";
-import type { ConversationState } from "@/domain/conversation";
+import type { AnswerField, ConversationState } from "@/domain/conversation";
 import ChatBubble from "./ChatBubble";
 import OpportunityCard from "./OpportunityCard";
 import ProgressSteps from "./ProgressSteps";
-import { QUESTIONS, labelFor, questionFor } from "./questions";
+import { QUESTIONS, labelFor, questionFor, type Question } from "./questions";
 
 type Status = "loading" | "ready" | "failed";
 
@@ -24,18 +23,31 @@ function hasAnswers(state: ConversationState) {
   return Boolean(state.goal || state.experience || state.availability);
 }
 
+function recordOpen(opportunityId: string) {
+  // Never delays the link. keepalive lets it finish as the page changes.
+  fetch("/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ opportunityId }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 export default function Conversation() {
   const [status, setStatus] = useState<Status>("loading");
   const [view, setView] = useState<ConversationView | null>(null);
   const [isGuest, setIsGuest] = useState(true);
   const [returning, setReturning] = useState(false);
   const [lastAnswer, setLastAnswer] = useState<string | null>(null);
+  const [editing, setEditing] = useState<AnswerField | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackNote, setFeedbackNote] = useState<string | null>(null);
   const started = useRef(false);
   const moveFocus = useRef(false);
   const firstOption = useRef<HTMLButtonElement>(null);
   const messages = useRef<HTMLDivElement>(null);
+  const editButtons = useRef<Partial<Record<AnswerField, HTMLButtonElement | null>>>({});
 
   const load = useCallback(async () => {
     setStatus("loading");
@@ -69,9 +81,21 @@ export default function Conversation() {
     moveFocus.current = false;
     // With no options left, focus the messages so it isn't lost.
     (firstOption.current ?? messages.current)?.focus();
-  }, [view]);
+  }, [view, editing]);
 
-  async function answer(field: string, value: string, label: string) {
+  function startEditing(field: AnswerField) {
+    setError(null);
+    moveFocus.current = true;
+    setEditing(field);
+  }
+
+  function stopEditing() {
+    const field = editing;
+    setEditing(null);
+    if (field) setTimeout(() => editButtons.current[field]?.focus(), 0);
+  }
+
+  async function answer(field: AnswerField, value: string, label: string) {
     if (saving) return;
     setSaving(true);
     setError(null);
@@ -86,8 +110,10 @@ export default function Conversation() {
         moveFocus.current = true;
         setLastAnswer(label);
         setReturning(false);
+        setEditing(null);
         setView(result);
       } else if (response.status === 409) {
+        setEditing(null);
         await load();
         setError(result.message);
       } else {
@@ -95,6 +121,29 @@ export default function Conversation() {
       }
     } catch {
       setError(SAVE_ERROR);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function giveFeedback(helpful: boolean) {
+    if (saving || !view) return;
+    setSaving(true);
+    setFeedbackNote(null);
+    try {
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ helpful }),
+      });
+      if (response.ok) {
+        setView({ ...view, helpful });
+        setFeedbackNote("Thanks for telling us.");
+      } else {
+        setFeedbackNote(SAVE_ERROR);
+      }
+    } catch {
+      setFeedbackNote(SAVE_ERROR);
     } finally {
       setSaving(false);
     }
@@ -123,11 +172,19 @@ export default function Conversation() {
     );
   }
 
-  const { state, recommendations, noMatch, sample } = view;
+  const { state, recommendations, noMatch, sample, helpful } = view;
   const question = questionFor(state.currentStep);
-  const options = question ?? (noMatch ? HOURS_QUESTION : undefined);
+  const editQuestion = editing ? QUESTIONS.find((q) => q.field === editing) : undefined;
+  const options: Question | undefined =
+    editQuestion ?? question ?? (noMatch ? HOURS_QUESTION : undefined);
   const answered = QUESTIONS.filter(({ field }) => state[field]);
   const count = recommendations.length;
+  const canEdit = state.currentStep !== "feedback";
+  const groupLabel = editQuestion
+    ? `Change your ${editQuestion.summaryLabel.toLowerCase()}`
+    : noMatch
+      ? "Change your hours"
+      : options?.prompt;
 
   return (
     <Box sx={{ minHeight: 360 }}>
@@ -140,9 +197,39 @@ export default function Conversation() {
           sx={{ display: "flex", flexWrap: "wrap", gap: 1, listStyle: "none", m: 0, mb: 3, p: 0 }}
         >
           {answered.map(({ field, summaryLabel }) => (
-            <li key={field}>
-              <Chip variant="outlined" label={`${summaryLabel}: ${labelFor(field, state[field])}`} />
-            </li>
+            <Box
+              component="li"
+              key={field}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                pl: 1.5,
+                pr: 0.5,
+                border: 1,
+                borderColor: "divider",
+                borderRadius: 4,
+              }}
+            >
+              <Typography variant="body2">
+                {summaryLabel}: {labelFor(field, state[field])}
+              </Typography>
+              {canEdit && (
+                <Button
+                  size="small"
+                  ref={(element) => {
+                    editButtons.current[field] = element;
+                  }}
+                  aria-label={`Edit ${summaryLabel.toLowerCase()}`}
+                  aria-expanded={editing === field}
+                  disabled={saving}
+                  onClick={() => (editing === field ? stopEditing() : startEditing(field))}
+                  sx={{ minWidth: 44, minHeight: 32 }}
+                >
+                  Edit
+                </Button>
+              )}
+            </Box>
           ))}
         </Box>
       )}
@@ -172,7 +259,7 @@ export default function Conversation() {
           </ChatBubble>
         )}
         {lastAnswer && <ChatBubble from="member">{lastAnswer}</ChatBubble>}
-        {question && (
+        {question && !editing && (
           <ChatBubble from="firststep">
             <Box component="span" sx={visuallyHidden}>
               Step {question.number} of {QUESTIONS.length}.{" "}
@@ -203,14 +290,14 @@ export default function Conversation() {
       {count > 0 && (
         <Stack spacing={2} sx={{ mb: 3 }}>
           {recommendations.map((card) => (
-            <OpportunityCard key={card.id} card={card} sample={sample} />
+            <OpportunityCard key={card.id} card={card} sample={sample} onOpen={recordOpen} />
           ))}
         </Stack>
       )}
 
       {noMatch?.alternative && (
         <Box sx={{ mb: 3 }}>
-          <OpportunityCard card={noMatch.alternative} sample={sample} />
+          <OpportunityCard card={noMatch.alternative} sample={sample} onOpen={recordOpen} />
         </Box>
       )}
 
@@ -221,22 +308,24 @@ export default function Conversation() {
       )}
 
       {options && (
-        <>
-          {noMatch && (
-            <Typography id="change-hours" sx={{ fontWeight: 700, mb: 1 }}>
-              You can change your hours:
-            </Typography>
+        <Box
+          onKeyDown={(event) => {
+            if (editing && event.key === "Escape") stopEditing();
+          }}
+        >
+          {(noMatch || editQuestion) && (
+            <Typography sx={{ fontWeight: 700, mb: 1 }}>{groupLabel}:</Typography>
           )}
           <Stack
             role="group"
-            aria-label={noMatch ? "Change your hours" : options.prompt}
+            aria-label={groupLabel}
             direction={options.options.some((o) => o.hint) ? "column" : "row"}
             useFlexGap
             spacing={1}
             sx={{ flexWrap: "wrap", alignItems: "flex-start" }}
           >
             {options.options
-              .filter((option) => !noMatch || option.value !== state.availability)
+              .filter((option) => option.value !== state[options.field] || !state[options.field])
               .map((option, index) => (
                 <Button
                   key={option.value}
@@ -261,7 +350,39 @@ export default function Conversation() {
                 </Button>
               ))}
           </Stack>
-        </>
+          {editQuestion && (
+            <Button onClick={stopEditing} sx={{ mt: 1, minHeight: 44 }}>
+              Cancel
+            </Button>
+          )}
+        </Box>
+      )}
+
+      {state.currentStep === "results" && !editing && (
+        <Box sx={{ mt: 3 }}>
+          {helpful === null ? (
+            <>
+              <Typography id="helpful-question" sx={{ fontWeight: 700, mb: 1 }}>
+                Was this helpful?
+              </Typography>
+              <Stack direction="row" spacing={1} role="group" aria-labelledby="helpful-question">
+                <Button variant="outlined" disabled={saving} onClick={() => giveFeedback(true)} sx={{ minHeight: 44 }}>
+                  Yes
+                </Button>
+                <Button variant="outlined" disabled={saving} onClick={() => giveFeedback(false)} sx={{ minHeight: 44 }}>
+                  Not really
+                </Button>
+              </Stack>
+            </>
+          ) : (
+            <Typography>
+              You told us this was {helpful ? "helpful" : "not helpful"}.
+            </Typography>
+          )}
+          <Typography role="status" sx={{ mt: 1 }}>
+            {feedbackNote}
+          </Typography>
+        </Box>
       )}
 
       <Box sx={{ mt: 4 }}>
