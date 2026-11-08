@@ -5,7 +5,12 @@ import Typography from "@mui/material/Typography";
 import type { Card } from "@/actions/view";
 import { tokens } from "@/theme";
 
-type Props = { card: Card; sample: boolean; onOpen?: (id: string) => void };
+type Props = {
+  card: Card;
+  sample: boolean;
+  onOpen?: (id: string) => void;
+  headingLevel?: "h2" | "h3";
+};
 
 function checkedNote(card: Card, sample: boolean) {
   if (sample || !card.lastVerified) {
@@ -16,10 +21,10 @@ function checkedNote(card: Card, sample: boolean) {
   return `From approved Tech Fleet content, last checked ${month}.`;
 }
 
-export default function OpportunityCard({ card, sample, onOpen }: Props) {
+export default function OpportunityCard({ card, sample, onOpen, headingLevel = "h2" }: Props) {
   return (
     <Paper component="article" variant="outlined" sx={{ p: 2.5 }}>
-      <Typography component="h2" sx={{ fontSize: "1.125rem", fontWeight: 700, mb: 1 }}>
+      <Typography component={headingLevel}sx={{ fontSize: "1.125rem", fontWeight: 700, mb: 1 }}>
         {card.title}
       </Typography>
 

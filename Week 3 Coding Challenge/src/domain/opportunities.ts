@@ -2,6 +2,7 @@
 // Pure rules: no screens, database or Claude.
 
 import { z } from "zod";
+import { byFewestHours, fitsHours } from "./browse.ts";
 import { EXPERIENCE_LEVELS, GOALS } from "./conversation.ts";
 
 const opportunitySchema = z.strictObject({
@@ -53,13 +54,6 @@ export type Answers = {
   availability: string | null;
 };
 
-const MAX_HOURS: Record<string, number> = {
-  under_5: 4,
-  "5_to_10": 10,
-  "10_to_20": 20,
-  more_than_20: 40,
-};
-
 const LEVEL_PHRASE: Record<string, string> = {
   new_to_tech: "new to tech",
   some_experience: "with some experience",
@@ -81,10 +75,9 @@ const GOAL_PHRASE: Record<string, string> = {
 };
 
 function fitsLevelAndHours(item: Opportunity, answers: Answers) {
-  const limit = answers.availability ? MAX_HOURS[answers.availability] : undefined;
   return (
-    limit !== undefined &&
-    item.minHours <= limit &&
+    answers.availability !== null &&
+    fitsHours(item.minHours, answers.availability) &&
     item.experienceLevels.some((level) => level === answers.experience)
   );
 }
@@ -92,9 +85,6 @@ function fitsLevelAndHours(item: Opportunity, answers: Answers) {
 function fitsGoal(item: Opportunity, goal: string | null) {
   return goal === "not_sure" || item.goals.some((itemGoal) => itemGoal === goal);
 }
-
-const byFewestHours = (a: Opportunity, b: Opportunity) =>
-  a.minHours - b.minHours || a.title.localeCompare(b.title);
 
 /** Up to three opportunities that fit the goal, experience level and hours. */
 export function findMatches(items: Opportunity[], answers: Answers, limit = 3) {
