@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createDataClient } from "@/data/client";
+import { findFeedback } from "@/data/feedback";
 import { addStepEvent } from "@/data/step-events";
 import {
   findSession,
@@ -51,5 +52,6 @@ export async function answerQuestion(
     eventType,
   });
 
-  return { status: "ok", view: buildView(next) };
+  const helpful = await findFeedback(client, session.id);
+  return { status: "ok", view: buildView(next, helpful) };
 }

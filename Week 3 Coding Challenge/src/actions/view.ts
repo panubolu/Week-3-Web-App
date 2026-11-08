@@ -24,6 +24,7 @@ export type Card = Pick<
 
 export type ConversationView = {
   state: ConversationState;
+  helpful: boolean | null;
   sample: boolean;
   recommendations: Card[];
   noMatch: { reason: string; alternative: Card | null } | null;
@@ -31,6 +32,9 @@ export type ConversationView = {
 
 export const hasMatches = (answers: ConversationState) =>
   findMatches(content.opportunities, answers).length > 0;
+
+export const isKnownOpportunity = (id: string) =>
+  content.opportunities.some((item) => item.id === id);
 
 function toCard(item: Opportunity, state: ConversationState): Card {
   return {
@@ -47,9 +51,13 @@ function toCard(item: Opportunity, state: ConversationState): Card {
 }
 
 /** What the screen needs for this state. Links come only from the content file. */
-export function buildView(state: ConversationState): ConversationView {
+export function buildView(
+  state: ConversationState,
+  helpful: boolean | null,
+): ConversationView {
   const view: ConversationView = {
     state,
+    helpful,
     sample: content.sample,
     recommendations: [],
     noMatch: null,

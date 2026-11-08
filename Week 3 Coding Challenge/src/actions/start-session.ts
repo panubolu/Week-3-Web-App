@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createDataClient } from "@/data/client";
+import { findFeedback } from "@/data/feedback";
 import { getOrCreateSession, toConversationState } from "@/data/sessions";
 import { buildView } from "./view";
 
@@ -26,8 +27,9 @@ export async function startSession() {
   }
 
   const session = await getOrCreateSession(client, user.id);
+  const helpful = await findFeedback(client, session.id);
   return {
-    view: buildView(toConversationState(session)),
+    view: buildView(toConversationState(session), helpful),
     isGuest: user.is_anonymous === true,
   };
 }

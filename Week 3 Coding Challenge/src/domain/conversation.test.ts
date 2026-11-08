@@ -21,6 +21,7 @@ const at = (currentStep: Step, extra = {}): ConversationState => ({
   currentStep,
   ...extra,
 });
+const filled = { goal: "learning", experience: "new_to_tech", availability: "5_to_10" };
 const matches = () => true;
 const noMatches = () => false;
 
@@ -56,13 +57,13 @@ test("availability moves to no_match when nothing fits", () => {
 });
 
 test("no_match can change availability and reach results", () => {
-  const d = moved(at("no_match"), { type: "answer", field: "availability", value: "10_to_20" });
+  const d = moved(at("no_match", filled), { type: "answer", field: "availability", value: "10_to_20" });
   assert.equal(d.next.currentStep, "results");
   assert.equal(d.eventType, "edited");
 });
 
 test("no_match can change availability and stay at no_match", () => {
-  const d = moved(at("no_match"), { type: "answer", field: "availability", value: "under_5" }, noMatches);
+  const d = moved(at("no_match", filled), { type: "answer", field: "availability", value: "under_5" }, noMatches);
   assert.equal(d.next.currentStep, "no_match");
 });
 
@@ -73,14 +74,14 @@ test("results can edit every answer without restarting", () => {
     { type: "answer", field: "availability", value: "more_than_20" },
   ] as const;
   for (const event of events) {
-    const d = moved(at("results", { completed: true }), event);
+    const d = moved(at("results", { ...filled, completed: true }), event);
     assert.equal(d.next.currentStep, "results");
     assert.equal(d.eventType, "edited");
   }
 });
 
 test("an edit at results can lead to no_match", () => {
-  const d = moved(at("results", { completed: true }), { type: "answer", field: "availability", value: "under_5" }, noMatches);
+  const d = moved(at("results", { ...filled, completed: true }), { type: "answer", field: "availability", value: "under_5" }, noMatches);
   assert.equal(d.next.currentStep, "no_match");
 });
 
@@ -136,6 +137,29 @@ test("every allowed option is accepted", () => {
   for (const value of GOALS) moved(at("goal"), { type: "answer", field: "goal", value });
   for (const value of EXPERIENCE_LEVELS) moved(at("experience"), { type: "answer", field: "experience", value });
   for (const value of AVAILABILITY) moved(at("availability"), { type: "answer", field: "availability", value });
+});
+
+test("an earlier answer can change mid-way, staying on the same question", () => {
+  const state = at("availability", { goal: "learning", experience: "new_to_tech" });
+  const d = moved(state, { type: "answer", field: "goal", value: "not_sure" });
+  assert.equal(d.next.currentStep, "availability");
+  assert.equal(d.next.goal, "not_sure");
+  assert.equal(d.eventType, "edited");
+});
+
+test("goal and experience can change from no_match", () => {
+  const state = at("no_match", { goal: "project_experience", experience: "new_to_tech", availability: "under_5" });
+  const d = moved(state, { type: "answer", field: "goal", value: "learning" });
+  assert.equal(d.next.currentStep, "results");
+  assert.equal(d.eventType, "edited");
+});
+
+test("an unanswered question cannot be edited ahead of time", () => {
+  const state = at("experience", { goal: "learning" });
+  assert.deepEqual(
+    decide(state, { type: "answer", field: "availability", value: "under_5" }, matches),
+    { ok: false, reason: "not_allowed" },
+  );
 });
 
 test("the input state is never changed", () => {

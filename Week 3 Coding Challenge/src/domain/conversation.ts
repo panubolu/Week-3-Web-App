@@ -62,13 +62,15 @@ const NEXT_QUESTION: Partial<Record<Step, Step>> = {
   experience: "availability",
 };
 
+const QUESTION_STEPS: readonly Step[] = ["goal", "experience", "availability"];
+
 function isFirstTimeAnswer(step: Step, field: AnswerField) {
   return step === field;
 }
 
-function canEdit(step: Step, field: AnswerField) {
-  if (step === "results") return true;
-  return step === "no_match" && field === "availability";
+/** Any answer already given can change, until the conversation is finished. */
+function canEdit(state: ConversationState, field: AnswerField) {
+  return state[field] !== null && state.currentStep !== "feedback";
 }
 
 /**
@@ -94,7 +96,7 @@ export function decide(
   const { field, value } = event;
   const firstTime = isFirstTimeAnswer(state.currentStep, field);
 
-  if (!firstTime && !canEdit(state.currentStep, field)) {
+  if (!firstTime && !canEdit(state, field)) {
     return { ok: false, reason: "not_allowed" };
   }
   if (!OPTIONS[field].includes(value)) {
@@ -110,6 +112,11 @@ export function decide(
       next: { ...answered, currentStep: question },
       eventType: "answered",
     };
+  }
+
+  // Changing an earlier answer mid-way keeps the member on the same question.
+  if (!firstTime && QUESTION_STEPS.includes(state.currentStep)) {
+    return { ok: true, next: answered, eventType: "edited" };
   }
 
   const matched = hasMatches(answered);
