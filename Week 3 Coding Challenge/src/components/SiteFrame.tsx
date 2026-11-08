@@ -25,9 +25,14 @@ export function SiteHeader() {
       >
         FirstStep
       </AppLink>
-      <AppLink href="/sign-in" color="primary.dark">
-        Save my progress
-      </AppLink>
+      <Box component="nav" aria-label="Main" sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+        <AppLink href="/browse" color="primary.dark">
+          Browse all
+        </AppLink>
+        <AppLink href="/sign-in" color="primary.dark">
+          Save my progress
+        </AppLink>
+      </Box>
     </Box>
   );
 }

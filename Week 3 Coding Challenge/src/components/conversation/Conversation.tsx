@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ConversationView } from "@/actions/view";
+import AppLink from "@/components/AppLink";
 import type { AnswerField, ConversationState } from "@/domain/conversation";
 import ChatBubble from "./ChatBubble";
 import OpportunityCard from "./OpportunityCard";
@@ -356,6 +357,16 @@ export default function Conversation() {
             </Button>
           )}
         </Box>
+      )}
+
+      {noMatch && !editing && (
+        <Typography sx={{ mt: 2 }}>
+          Or{" "}
+          <AppLink href="/browse" color="primary.dark" sx={{ fontWeight: 700 }}>
+            browse all opportunities
+          </AppLink>{" "}
+          and choose your own way.
+        </Typography>
       )}
 
       {state.currentStep === "results" && !editing && (
