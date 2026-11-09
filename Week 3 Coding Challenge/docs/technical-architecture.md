@@ -633,7 +633,7 @@ We also found a practical limit. Supabase's built-in email only delivers to your
 - Set the Google OAuth client to production. In testing mode, only listed test users can sign in, so your teacher could be blocked.
 - A guest who clears their browser loses their progress. The app must say so plainly.
 - If the Google account already has a FirstStep account, the member signs in to it, and the guest answers are replaced. Test this case.
-- Delete guest accounts older than 30 days with a scheduled `pg_cron` job inside the database. Supabase has no automatic cleanup, and this avoids giving the app the secret key.
+- Delete guest accounts with no activity for 30 days with a scheduled `pg_cron` job inside the database. (Measured from the last saved answer, so an active guest is never removed.) Supabase has no automatic cleanup, and this avoids giving the app the secret key.
 - Consider an invisible bot check later if fake guests become a problem. Never use a puzzle.
 
 **Check with your teacher:** does optional sign-in meet "People can sign up and log in"? If sign-in must be required, drop the guest step. Most of this design still holds.
@@ -908,7 +908,7 @@ These do the few privileged jobs, so the app never needs the Supabase secret key
 |---|---|---|
 | `consume_chat_quota()` | Counts Claude calls and says whether a person is under their limits | Takes the person from `auth.uid()`, never from the browser |
 | `delete_my_account()` | Lets a member delete their own account, and their rows with it | Only ever deletes `auth.uid()`, the person calling it |
-| Daily `pg_cron` cleanup | Deletes logged questions and guest accounts older than 30 days | Runs inside the database, on a schedule |
+| Daily `pg_cron` cleanup | Deletes logged questions older than 30 days, and guest accounts with no activity for 30 days | Runs inside the database, on a schedule |
 
 Each function runs with raised permissions, so it must set a fixed `search_path` and be reviewed with extra care. The foreign keys use `on delete cascade`, so removing an account removes that person's rows.
 
