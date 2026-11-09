@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { withOneRetry } from "./retry";
 
 const UNIQUE_VIOLATION = "23505";
 
@@ -15,17 +16,22 @@ export async function findFeedback(client: SupabaseClient, sessionId: string) {
   return data?.helpful ?? null;
 }
 
-/** Saves the answer. Returns false if this session already answered. */
-export async function addFeedback(
+/**
+ * Saves the answer. Returns false if this session already answered.
+ * Safe to retry: a second insert for the same session is refused, not doubled.
+ */
+export function addFeedback(
   client: SupabaseClient,
   feedback: { sessionId: string; userId: string; helpful: boolean },
 ) {
-  const { error } = await client.from("feedback").insert({
-    session_id: feedback.sessionId,
-    user_id: feedback.userId,
-    helpful: feedback.helpful,
+  return withOneRetry(async () => {
+    const { error } = await client.from("feedback").insert({
+      session_id: feedback.sessionId,
+      user_id: feedback.userId,
+      helpful: feedback.helpful,
+    });
+    if (!error) return true;
+    if (error.code === UNIQUE_VIOLATION) return false;
+    throw new Error(`Could not save feedback: ${error.code}`);
   });
-  if (!error) return true;
-  if (error.code === UNIQUE_VIOLATION) return false;
-  throw new Error(`Could not save feedback: ${error.code}`);
 }

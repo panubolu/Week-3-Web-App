@@ -12,7 +12,10 @@ const requestSchema = z.discriminatedUnion("type", [
 ]);
 
 const refusals = {
-  no_session: { status: 401, message: "Please refresh the page to continue." },
+  no_session: {
+    status: 401,
+    message: "Your session has ended. Please refresh the page to continue.",
+  },
   conflict: {
     status: 409,
     message: "This changed in another tab. Please reload to see the latest.",
@@ -52,7 +55,8 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "unavailable",
-        message: "We couldn't save that. Please try again in a moment.",
+        message:
+          "We couldn't save your answer just now. Your earlier answers are safe. Please try again.",
       },
       { status: 503 },
     );

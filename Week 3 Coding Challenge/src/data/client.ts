@@ -2,6 +2,7 @@ import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { fetchWithTimeout } from "./retry";
 
 function requireSetting(name: string, value: string | undefined): string {
   if (!value) {
@@ -26,6 +27,8 @@ export async function createDataClient() {
   const cookieStore = await cookies();
 
   return createServerClient(url, publishableKey, {
+    // A stuck database must not leave the member waiting forever.
+    global: { fetch: fetchWithTimeout },
     cookies: {
       getAll() {
         return cookieStore.getAll();
