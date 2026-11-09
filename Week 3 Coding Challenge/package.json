@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --conditions=react-server --test \"src/**/*.test.ts\""
+    "test": "node --conditions=react-server --test \"src/**/*.test.ts\"",
+    "rule-tests": "node --conditions=react-server --env-file=.env.local scripts/rule-tests.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.7.0",
