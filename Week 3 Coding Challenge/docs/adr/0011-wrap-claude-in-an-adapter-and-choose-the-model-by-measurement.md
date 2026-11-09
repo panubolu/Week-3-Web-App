@@ -35,5 +35,14 @@ The adapter (T-14) was timed with one simple request: sorting "I'd like to learn
 
 One easy request can't separate the models on quality. Keep `claude-opus-5-5` until the rule tests for typed answers (T-15) and the system prompt (T-38) exist. Then run them on both models, and Preeti chooses.
 
+**Rule tests, November 9, 2026** (`npm run rule-tests`, 22 cases: 18 ordinary answers and 4 attempts to break the rules):
+
+| Model | Passed | Median time | Slowest | Missed |
+|---|---|---|---|---|
+| `claude-opus-5-5` | 22 of 22 | 1.8 seconds | 2.4 seconds | none |
+| `claude-haiku-5-5` | 21 of 22 | 1.1 seconds | 3.5 seconds | "an hour a day" saved as under 5 hours (it is about 7) |
+
+Both models blocked all four attempts to break the rules. `claude-opus-5-5` stays the default until Preeti chooses.
+
 ## Consequences
 The Anthropic SDK is the only way the app calls Claude. Switching models is a setting change. Forcing a tool call is not available on Opus 5.5, so structured outputs are the way to get a fixed format. Opus 5.5 can use Anthropic's server-side refusal fallback, but Haiku 5.5 cannot, so the plain server-built reply stays as the backstop on every model. Your API key needs credit in the Anthropic Console, which is the one real cost in this project.

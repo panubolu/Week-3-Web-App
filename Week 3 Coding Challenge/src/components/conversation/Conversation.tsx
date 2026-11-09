@@ -4,12 +4,13 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import type { ConversationView } from "@/actions/view";
 import AppLink from "@/components/AppLink";
-import type { AnswerField, ConversationState } from "@/domain/conversation";
+import { TYPED_MAX, type AnswerField, type ConversationState } from "@/domain/conversation";
 import ChatBubble from "./ChatBubble";
 import OpportunityCard from "./OpportunityCard";
 import ProgressSteps from "./ProgressSteps";
@@ -52,6 +53,8 @@ export default function Conversation() {
   const [error, setError] = useState<Failure | null>(null);
   const [lastAttempt, setLastAttempt] = useState<Attempt | null>(null);
   const [feedbackNote, setFeedbackNote] = useState<string | null>(null);
+  const [typed, setTyped] = useState("");
+  const [thinking, setThinking] = useState(false);
   const started = useRef(false);
   const moveFocus = useRef(false);
   const firstOption = useRef<HTMLButtonElement>(null);
@@ -143,6 +146,54 @@ export default function Conversation() {
       // No answer from the server: offline, or it took too long.
       setError({ message: SAVE_ERROR, action: "retry" });
     } finally {
+      setSaving(false);
+    }
+  }
+
+  async function sendTyped(event: FormEvent) {
+    event.preventDefault();
+    if (saving) return;
+    const text = typed.trim();
+    // Checked here for speed, and again on the server.
+    if (!text) {
+      setError({ message: "Please type an answer first, or choose one of the options." });
+      return;
+    }
+    if (text.length > TYPED_MAX) {
+      setError({ message: `Please keep your answer under ${TYPED_MAX} characters.` });
+      return;
+    }
+    setSaving(true);
+    setThinking(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "text", text }),
+        signal: timeLimit(),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (response.ok) {
+        moveFocus.current = true;
+        setLastAnswer(text);
+        setTyped("");
+        setReturning(false);
+        setView(result);
+      } else if (response.status === 409) {
+        await load();
+        setError({ message: result.message ?? SAVE_ERROR });
+      } else if (response.status === 401) {
+        setError({ message: result.message ?? SAVE_ERROR, action: "refresh" });
+      } else {
+        // Not understood, over the limit, or Claude is unavailable. The
+        // typed text stays in the box, and the buttons still work.
+        setError({ message: result.message ?? SAVE_ERROR });
+      }
+    } catch {
+      setError({ message: SAVE_ERROR });
+    } finally {
+      setThinking(false);
       setSaving(false);
     }
   }
@@ -314,6 +365,7 @@ export default function Conversation() {
         {noMatch?.alternative && (
           <ChatBubble from="firststep">Here&apos;s a way to start with less commitment:</ChatBubble>
         )}
+        {thinking && <ChatBubble from="firststep">Reading your answer...</ChatBubble>}
       </Stack>
 
       {sample && (count > 0 || noMatch?.alternative) && (
@@ -406,6 +458,38 @@ export default function Conversation() {
               Cancel
             </Button>
           )}
+        </Box>
+      )}
+
+      {(question || noMatch) && !editing && (
+        <Box component="form" onSubmit={sendTyped} noValidate sx={{ mt: 3 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
+            <TextField
+              id="typed-answer"
+              label="Or type your answer"
+              value={typed}
+              onChange={(event) => setTyped(event.target.value)}
+              disabled={saving}
+              fullWidth
+              size="small"
+              autoComplete="off"
+              error={typed.length > TYPED_MAX}
+              slotProps={{ formHelperText: { component: "div" } as object }}
+              helperText={
+                <Box component="span" sx={{ display: "flex", justifyContent: "space-between", gap: 1 }}>
+                  <span>Please don&apos;t share personal details here.</span>
+                  <span aria-live={typed.length > TYPED_MAX ? "polite" : "off"}>
+                    {typed.length > TYPED_MAX
+                      ? `${typed.length - TYPED_MAX} ${typed.length - TYPED_MAX === 1 ? "character" : "characters"} over the limit`
+                      : `${typed.length}/${TYPED_MAX}`}
+                  </span>
+                </Box>
+              }
+            />
+            <Button type="submit" variant="contained" disabled={saving} sx={{ minHeight: 40, flexShrink: 0 }}>
+              Send
+            </Button>
+          </Stack>
         </Box>
       )}
 

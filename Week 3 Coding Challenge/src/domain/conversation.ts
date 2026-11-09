@@ -21,6 +21,9 @@ export const AVAILABILITY = [
   "more_than_20",
 ] as const;
 
+/** Longest answer a member can type (Architecture Step 9). */
+export const TYPED_MAX = 500;
+
 export type Step =
   | "goal"
   | "experience"

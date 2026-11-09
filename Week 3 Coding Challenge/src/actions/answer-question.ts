@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createDataClient } from "@/data/client";
 import { findFeedback } from "@/data/feedback";
 import { addStepEvent } from "@/data/step-events";
@@ -7,6 +8,7 @@ import {
   findSession,
   saveSession,
   toConversationState,
+  type SessionRow,
 } from "@/data/sessions";
 import { decide, type ConversationEvent } from "@/domain/conversation";
 import { buildView, hasMatches, type ConversationView } from "./view";
@@ -16,22 +18,17 @@ export type AnswerResult =
   | { status: "no_session" | "conflict" | "not_allowed" | "invalid_value" };
 
 /**
- * Steps for: Answer a question
- * 1. Find who this person is, and load their own session
- * 2. Ask the rules what happens next
- * 3. Save, unless another tab saved first
- * 4. Record the step and send back the new state
+ * Steps shared by tapped and typed answers, once the person and their
+ * session are known:
+ * 1. Ask the rules what happens next
+ * 2. Save, unless another tab saved first
+ * 3. Record the step and send back the new state
  */
-export async function answerQuestion(
+export async function applyAnswer(
+  client: SupabaseClient,
+  session: SessionRow,
   event: ConversationEvent,
 ): Promise<AnswerResult> {
-  const client = await createDataClient();
-  const { data } = await client.auth.getUser();
-  if (!data.user) return { status: "no_session" };
-
-  const session = await findSession(client, data.user.id);
-  if (!session) return { status: "no_session" };
-
   const decision = decide(toConversationState(session), event, hasMatches);
   if (!decision.ok) return { status: decision.reason };
 
@@ -58,4 +55,20 @@ export async function answerQuestion(
     return null;
   });
   return { status: "ok", view: buildView(next, helpful) };
+}
+
+/**
+ * Steps for: Answer a question (tapped)
+ * 1. Find who this person is, and load their own session
+ * 2. Apply the answer
+ */
+export async function answerQuestion(event: ConversationEvent): Promise<AnswerResult> {
+  const client = await createDataClient();
+  const { data } = await client.auth.getUser();
+  if (!data.user) return { status: "no_session" };
+
+  const session = await findSession(client, data.user.id);
+  if (!session) return { status: "no_session" };
+
+  return applyAnswer(client, session, event);
 }
