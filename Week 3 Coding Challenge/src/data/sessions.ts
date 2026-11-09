@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ConversationState, Step } from "@/domain/conversation";
+import { withOneRetry } from "./retry";
 
 export type SessionRow = {
   id: string;
@@ -71,18 +72,23 @@ export async function getOrCreateSession(
  * Saves changes only if nobody saved since this session was read.
  * Returns null when another tab got there first.
  */
-export async function saveSession(
+export function saveSession(
   client: SupabaseClient,
   session: SessionRow,
   changes: SessionChanges,
 ) {
-  const { data, error } = await client
-    .from("sessions")
-    .update({ ...changes, version: session.version + 1 })
-    .eq("id", session.id)
-    .eq("version", session.version)
-    .select(COLUMNS)
-    .maybeSingle<SessionRow>();
-  if (error) throw new Error(`Could not save session: ${error.code}`);
-  return data;
+  // Safe to retry: the version check stops a write from applying twice.
+  // If the first try saved but its reply was lost, the retry finds a newer
+  // version and returns null, so the screen reloads the latest state.
+  return withOneRetry(async () => {
+    const { data, error } = await client
+      .from("sessions")
+      .update({ ...changes, version: session.version + 1 })
+      .eq("id", session.id)
+      .eq("version", session.version)
+      .select(COLUMNS)
+      .maybeSingle<SessionRow>();
+    if (error) throw new Error(`Could not save session: ${error.code}`);
+    return data;
+  });
 }

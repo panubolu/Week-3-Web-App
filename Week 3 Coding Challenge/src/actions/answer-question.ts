@@ -45,13 +45,17 @@ export async function answerQuestion(
   });
   if (!saved) return { status: "conflict" };
 
+  // The answer is saved. Extras below must not turn that into an error.
   await addStepEvent(client, {
     sessionId: session.id,
     userId: session.user_id,
     step: session.current_step,
     eventType,
-  });
+  }).catch((error) => console.error("Step event not recorded:", error));
 
-  const helpful = await findFeedback(client, session.id);
+  const helpful = await findFeedback(client, session.id).catch((error) => {
+    console.error("Feedback not loaded:", error);
+    return null;
+  });
   return { status: "ok", view: buildView(next, helpful) };
 }

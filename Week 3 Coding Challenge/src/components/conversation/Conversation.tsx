@@ -16,8 +16,15 @@ import ProgressSteps from "./ProgressSteps";
 import { QUESTIONS, labelFor, questionFor, type Question } from "./questions";
 
 type Status = "loading" | "ready" | "failed";
+type Failure = { message: string; action?: "retry" | "refresh" };
+type Attempt = { field: AnswerField; value: string; label: string };
 
-const SAVE_ERROR = "We couldn't save that. Please try again in a moment.";
+const SAVE_ERROR =
+  "We couldn't save your answer just now. Your earlier answers are safe. Please try again.";
+const FEEDBACK_ERROR = "We couldn't save that just now. Please try again.";
+// Longer than the server's own limits, so the server can answer first.
+const REQUEST_TIMEOUT_MS = 20000;
+const timeLimit = () => AbortSignal.timeout(REQUEST_TIMEOUT_MS);
 const HOURS_QUESTION = QUESTIONS.find((q) => q.field === "availability")!;
 
 function hasAnswers(state: ConversationState) {
@@ -42,7 +49,8 @@ export default function Conversation() {
   const [lastAnswer, setLastAnswer] = useState<string | null>(null);
   const [editing, setEditing] = useState<AnswerField | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Failure | null>(null);
+  const [lastAttempt, setLastAttempt] = useState<Attempt | null>(null);
   const [feedbackNote, setFeedbackNote] = useState<string | null>(null);
   const started = useRef(false);
   const moveFocus = useRef(false);
@@ -54,7 +62,7 @@ export default function Conversation() {
     setStatus("loading");
     setError(null);
     try {
-      const response = await fetch("/api/session", { method: "POST" });
+      const response = await fetch("/api/session", { method: "POST", signal: timeLimit() });
       if (!response.ok) {
         setStatus("failed");
         return;
@@ -70,10 +78,13 @@ export default function Conversation() {
   }, []);
 
   useEffect(() => {
-    // React runs effects twice in development. Create only one guest.
-    if (started.current) return;
-    started.current = true;
-    const timer = setTimeout(load, 0);
+    // React runs effects twice in development. The first run's timer is
+    // cancelled, so only the second one loads, and only one guest is created.
+    const timer = setTimeout(() => {
+      if (started.current) return;
+      started.current = true;
+      load();
+    }, 0);
     return () => clearTimeout(timer);
   }, [load]);
 
@@ -100,31 +111,44 @@ export default function Conversation() {
     if (saving) return;
     setSaving(true);
     setError(null);
+    setLastAttempt({ field, value, label });
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "answer", field, value }),
+        signal: timeLimit(),
       });
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
       if (response.ok) {
         moveFocus.current = true;
         setLastAnswer(label);
         setReturning(false);
         setEditing(null);
+        setLastAttempt(null);
         setView(result);
       } else if (response.status === 409) {
+        // Another tab saved first, or the step moved on. Show the latest.
         setEditing(null);
         await load();
-        setError(result.message);
+        setError({ message: result.message ?? SAVE_ERROR });
+      } else if (response.status === 401) {
+        setError({ message: result.message ?? SAVE_ERROR, action: "refresh" });
+      } else if (response.status === 400) {
+        setError({ message: result.message ?? SAVE_ERROR });
       } else {
-        setError(result.message ?? SAVE_ERROR);
+        setError({ message: result.message ?? SAVE_ERROR, action: "retry" });
       }
     } catch {
-      setError(SAVE_ERROR);
+      // No answer from the server: offline, or it took too long.
+      setError({ message: SAVE_ERROR, action: "retry" });
     } finally {
       setSaving(false);
     }
+  }
+
+  function retryLastAnswer() {
+    if (lastAttempt) answer(lastAttempt.field, lastAttempt.value, lastAttempt.label);
   }
 
   async function giveFeedback(helpful: boolean) {
@@ -136,15 +160,16 @@ export default function Conversation() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ helpful }),
+        signal: timeLimit(),
       });
       if (response.ok) {
         setView({ ...view, helpful });
         setFeedbackNote("Thanks for telling us.");
       } else {
-        setFeedbackNote(SAVE_ERROR);
+        setFeedbackNote(FEEDBACK_ERROR);
       }
     } catch {
-      setFeedbackNote(SAVE_ERROR);
+      setFeedbackNote(FEEDBACK_ERROR);
     } finally {
       setSaving(false);
     }
@@ -160,16 +185,26 @@ export default function Conversation() {
 
   if (status === "failed" || !view) {
     return (
-      <Alert
-        severity="error"
-        action={
-          <Button color="inherit" size="small" onClick={load}>
-            Try again
-          </Button>
-        }
-      >
-        We couldn&apos;t get FirstStep ready. Please try again in a moment.
-      </Alert>
+      <Box sx={{ minHeight: 360 }}>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={load} sx={{ minHeight: 32 }}>
+              Try again
+            </Button>
+          }
+        >
+          We couldn&apos;t get FirstStep ready. This is usually brief, so please
+          try again in a moment.
+        </Alert>
+        <Typography sx={{ mt: 2 }}>
+          While you wait, you can{" "}
+          <AppLink href="/browse" color="primary.dark" sx={{ fontWeight: 700 }}>
+            browse all opportunities
+          </AppLink>
+          . It works even when FirstStep can&apos;t save progress.
+        </Typography>
+      </Box>
     );
   }
 
@@ -303,8 +338,23 @@ export default function Conversation() {
       )}
 
       {error && (
-        <Alert severity="warning" role="alert" sx={{ mb: 2 }}>
-          {error}
+        <Alert
+          severity="warning"
+          role="alert"
+          sx={{ mb: 2 }}
+          action={
+            error.action === "retry" ? (
+              <Button color="inherit" size="small" disabled={saving} onClick={retryLastAnswer} sx={{ minHeight: 32 }}>
+                Try again
+              </Button>
+            ) : error.action === "refresh" ? (
+              <Button color="inherit" size="small" onClick={() => window.location.reload()} sx={{ minHeight: 32 }}>
+                Refresh
+              </Button>
+            ) : undefined
+          }
+        >
+          {error.message}
         </Alert>
       )}
 
