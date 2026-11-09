@@ -7,11 +7,13 @@ const requestSchema = z.strictObject({ helpful: z.boolean() });
 export async function POST(request: Request) {
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
+    console.warn("Feedback refused: invalid_request");
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
   try {
     const result = await giveFeedback(parsed.data.helpful);
     const status = { saved: 200, already: 200, no_session: 401, not_allowed: 409 }[result];
+    if (status >= 400) console.warn(`Feedback refused: ${result}`);
     return NextResponse.json({ result }, { status });
   } catch (error) {
     console.error("Feedback failed:", error);

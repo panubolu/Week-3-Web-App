@@ -34,6 +34,8 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) {
+    // Security log: the reason only, never the request body or who sent it.
+    console.warn("Chat refused: invalid_request");
     return NextResponse.json(
       { error: "invalid_request", message: refusals.invalid_value.message },
       { status: 400 },
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
     if (result.status === "ok") return NextResponse.json(result.view);
 
     const refusal = refusals[result.status];
+    console.warn(`Chat refused: ${result.status}`);
     return NextResponse.json(
       { error: result.status, message: refusal.message },
       { status: refusal.status },
