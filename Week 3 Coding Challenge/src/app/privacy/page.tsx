@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
+import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
+import DeleteMyData from "@/components/DeleteMyData";
 
 export const metadata: Metadata = { title: "Privacy | FirstStep" };
+
+const STORED = [
+  "Your answers to the three questions: goal, experience and hours a week.",
+  "Which step you reached, and which recommendations you opened, so we can improve FirstStep.",
+  "Your answer to \"Was this helpful?\".",
+];
 
 export default function PrivacyPage() {
   return (
@@ -12,7 +20,22 @@ export default function PrivacyPage() {
       </Typography>
       <Typography sx={{ mb: 2 }}>
         FirstStep helps new Tech Fleet members find a first step. Here is what
-        it keeps.
+        it keeps, for how long, and how to delete it.
+      </Typography>
+
+      <Typography variant="h2" sx={{ mt: 4, mb: 1 }}>
+        What FirstStep stores
+      </Typography>
+      <Box component="ul" sx={{ mt: 0, mb: 2, pl: 3 }}>
+        {STORED.map((item) => (
+          <Typography component="li" key={item} sx={{ mb: 0.5 }}>
+            {item}
+          </Typography>
+        ))}
+      </Box>
+      <Typography sx={{ mb: 2 }}>
+        FirstStep does not save a copy of your conversation, and it does not ask
+        for your name.
       </Typography>
 
       <Typography variant="h2" sx={{ mt: 4, mb: 1 }}>
@@ -29,8 +52,17 @@ export default function PrivacyPage() {
       </Typography>
       <Typography sx={{ mb: 2 }}>
         Google shares your name and email address with FirstStep, so you can
-        sign in again. We use them only for that. FirstStep does not see your
+        sign in again. We use them only for that, and keep them in our
+        sign-in system, separate from your answers. FirstStep does not see your
         Google password.
+      </Typography>
+
+      <Typography variant="h2" sx={{ mt: 4, mb: 1 }}>
+        How long we keep it
+      </Typography>
+      <Typography sx={{ mb: 2 }}>
+        Guest progress is deleted automatically after 30 days without a visit.
+        If you saved your progress with Google, we keep it until you delete it.
       </Typography>
 
       <Typography variant="h2" sx={{ mt: 4, mb: 1 }}>
@@ -40,6 +72,16 @@ export default function PrivacyPage() {
         Other members cannot see your information. The FirstStep team can read
         stored data to run and improve the service. We do not sell it.
       </Typography>
+
+      <Typography variant="h2" id="delete" sx={{ mt: 4, mb: 1 }}>
+        Delete your data
+      </Typography>
+      <Typography sx={{ mb: 2 }}>
+        You can delete everything FirstStep has saved for you at any time. This
+        deletes the data for the account you are using in this browser, guest
+        or Google.
+      </Typography>
+      <DeleteMyData />
     </Container>
   );
 }
