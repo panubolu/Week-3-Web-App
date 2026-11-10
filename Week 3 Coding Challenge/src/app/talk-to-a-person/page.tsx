@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import AppLink from "@/components/AppLink";
-import RecordHandoff from "@/components/RecordHandoff";
+import HandoffPanel from "@/components/HandoffPanel";
 import { content } from "@/data/content";
 
 export const metadata: Metadata = { title: "Talk to a person | FirstStep" };
 
-// Built from the approved content file, so it works even when the database
-// or Claude is down (T-22).
+// Built from the approved content file, so the contact shows even when the
+// database or Claude is down (T-22). The summary loads after (T-23).
 export default function TalkToAPersonPage() {
   const contact = content.coordinator;
-  const firstName = contact?.name.split(" ")[0];
 
   return (
     <Container component="main" maxWidth="sm" sx={{ py: 6 }}>
-      <RecordHandoff />
       <Typography variant="h1" color="primary.dark" gutterBottom>
         Talk to a person
       </Typography>
@@ -37,16 +32,7 @@ export default function TalkToAPersonPage() {
             <Typography color="text.secondary" sx={{ mb: 2 }}>
               {contact.role}
             </Typography>
-            <Button
-              variant="contained"
-              href={`mailto:${contact.email}?subject=${encodeURIComponent("FirstStep question")}`}
-              sx={{ minHeight: 44 }}
-            >
-              Email {firstName}
-            </Button>
-            <Typography variant="body2" sx={{ mt: 1.5 }}>
-              Or copy the address: <Box component="span" sx={{ fontWeight: 700 }}>{contact.email}</Box>
-            </Typography>
+            <HandoffPanel email={contact.email} firstName={contact.name.split(" ")[0]} />
           </Paper>
           <Typography sx={{ mb: 3 }}>
             You can also{" "}
@@ -63,13 +49,10 @@ export default function TalkToAPersonPage() {
         </Typography>
       )}
 
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+      <Typography variant="body2" color="text.secondary">
         Only share what you&apos;re comfortable sharing. Your FirstStep progress
         is saved.
       </Typography>
-      <AppLink href="/" color="primary.dark">
-        Back to FirstStep
-      </AppLink>
     </Container>
   );
 }
