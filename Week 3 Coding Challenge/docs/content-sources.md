@@ -11,6 +11,20 @@ The teacher asked us to take FirstStep's content from Tech Fleet's public platfo
 | Join a community volunteer team | "Being On Volunteer Teams" | 1–10, **published**: "1 to 10 hours a week depending on the volunteer role" | Everyone (no requirement published) |
 | Train on a nonprofit project team | "Time Commitments as a Project Trainee", "Application Requirements", the FAQ (8 weeks, free) | 15–20, **published** | Some experience, experienced. Tech Fleet expects a bootcamp, certificate, school or self-study background |
 
+## Approved answers to common questions (T-20)
+`faq` in the content file holds one approved answer for each topic. Every answer is written from the facts above, and every link comes from the same pages.
+
+| Topic | What the answer says | Source |
+|---|---|---|
+| Cost | Community, onboarding calls, observing and project training are free. Masterclasses about $50–100, Service Leadership free | techfleet.org/overview, the guide FAQ, "Being On Volunteer Teams" |
+| Experience needed | No degree, resume or portfolio. Project training expects some background | "Application Requirements" |
+| Time commitment | Volunteers 1–10 hours a week. Project training 8 weeks at 15–20 hours a week | "Being On Volunteer Teams", "Time Commitments as a Project Trainee" |
+| How to apply | Tech Fleet's own suggested first steps | "First Steps in the Tech Fleet Community" |
+| Acceptance chances | No promise. Points to the published requirements and a person | "Application Requirements" |
+| About Tech Fleet | A community-driven nonprofit for professional development in agile teamwork, UX, product and development | techfleet.org footer and about page |
+
+Any other question gets: "I don't have approved information on that, so I don't want to guess." The member is offered Talk to a person, and the question is saved in `unanswered_questions` (emails and phone numbers removed, deleted after 30 days) for the coordinator to review in the Supabase dashboard.
+
 ## The contact for "Talk to a person"
 Preeti Anubolu, Tech Fleet member and former project coordinator, through a separate FirstStep email address (ADR-0015). Backup: Tech Fleet's Contact Us page, https://techfleet.org/contact, which offers info@techfleet.org and Discord.
 

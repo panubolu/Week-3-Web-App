@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { byFewestHours, fitsHours } from "./browse.ts";
 import { EXPERIENCE_LEVELS, GOALS } from "./conversation.ts";
+import { FAQ_TOPICS } from "./faq.ts";
 
 const opportunitySchema = z.strictObject({
   id: z.string().regex(/^[a-z0-9-]{1,100}$/),
@@ -38,8 +39,22 @@ export const contentSchema = z
       })
       .nullable(),
     opportunities: z.array(opportunitySchema).min(1),
+    // Approved answers to common questions (T-20). Links come only from here.
+    faq: z.array(
+      z.strictObject({
+        topic: z.enum(FAQ_TOPICS),
+        answer: z.string().min(1).max(400),
+        link: z.strictObject({ label: z.string().min(1).max(80), url: z.url({ protocol: /^https$/ }) }).nullable(),
+      }),
+    ),
   })
   .superRefine((content, ctx) => {
+    for (const topic of FAQ_TOPICS) {
+      const count = content.faq.filter((entry) => entry.topic === topic).length;
+      if (count !== 1) {
+        ctx.addIssue({ code: "custom", path: ["faq"], message: `Topic ${topic} needs exactly one answer, found ${count}` });
+      }
+    }
     const ids = new Set<string>();
     content.opportunities.forEach((item, index) => {
       if (ids.has(item.id)) {

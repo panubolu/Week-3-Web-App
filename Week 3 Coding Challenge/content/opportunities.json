@@ -100,5 +100,49 @@
       "url": "https://guide.techfleet.org/team-portal/new-teammate-handbook/project-training-teams/applying-to-tech-fleet-project-training/application-requirements",
       "lastVerified": "2026-11-09"
     }
+  ],
+  "faq": [
+    {
+      "topic": "cost",
+      "answer": "Joining the Tech Fleet community is free, and so are onboarding calls, observing teams and project training. Masterclasses usually cost about $50 to $100, but the Service Leadership Masterclass is free.",
+      "link": { "label": "See Tech Fleet's membership options", "url": "https://techfleet.org/overview" }
+    },
+    {
+      "topic": "experience_needed",
+      "answer": "You don't need a degree, resume or portfolio. Onboarding calls, observing and the handbooks are open to everyone. For project training, Tech Fleet expects some background first, such as a bootcamp, certificate, school or self-study.",
+      "link": {
+        "label": "Read the project training requirements",
+        "url": "https://guide.techfleet.org/team-portal/new-teammate-handbook/project-training-teams/applying-to-tech-fleet-project-training/application-requirements"
+      }
+    },
+    {
+      "topic": "time_commitment",
+      "answer": "It depends on what you choose. Volunteer roles take about 1 to 10 hours a week. Project training runs for 8 weeks, and Tech Fleet expects 15 to 20 hours a week. Observing and onboarding calls take only as much time as you choose.",
+      "link": {
+        "label": "Read about time commitments",
+        "url": "https://guide.techfleet.org/team-portal/new-teammate-handbook/project-training-teams/being-on-project-training/time-commitments-as-a-project-trainee"
+      }
+    },
+    {
+      "topic": "how_to_apply",
+      "answer": "Tech Fleet suggests these steps: join the platform, book an onboarding call, read the handbooks, observe a project team, take the Service Leadership Masterclass, and then apply to project training.",
+      "link": {
+        "label": "See Tech Fleet's first steps",
+        "url": "https://guide.techfleet.org/start-here/get-started/first-steps-in-the-tech-fleet-community"
+      }
+    },
+    {
+      "topic": "acceptance_chances",
+      "answer": "I can't promise you a place, and I don't want to guess about your chances. Tech Fleet publishes what it looks for, and a person can talk it through with you.",
+      "link": {
+        "label": "Read the project training requirements",
+        "url": "https://guide.techfleet.org/team-portal/new-teammate-handbook/project-training-teams/applying-to-tech-fleet-project-training/application-requirements"
+      }
+    },
+    {
+      "topic": "about_tech_fleet",
+      "answer": "Tech Fleet is a community-driven nonprofit that offers professional development, mainly in agile teamwork, UX, product and development. Members practice on real teams for nonprofit clients.",
+      "link": { "label": "Learn about Tech Fleet", "url": "https://techfleet.org/about" }
+    }
   ]
 }

@@ -88,6 +88,8 @@ export async function POST(request: Request) {
     }
 
     if (result.status === "ok") return NextResponse.json(result.view);
+    // A question: the same view, plus FirstStep's approved or honest reply.
+    if (result.status === "question") return NextResponse.json({ ...result.view, reply: result.reply });
     return refuse(result.status);
   } catch (error) {
     // Details stay in server logs. The browser gets a plain message.

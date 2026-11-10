@@ -8,6 +8,8 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import Link from "@mui/material/Link";
+import type { InfoReply } from "@/actions/answer-typed";
 import type { ConversationView } from "@/actions/view";
 import AppLink from "@/components/AppLink";
 import { TYPED_MAX, type AnswerField, type ConversationState } from "@/domain/conversation";
@@ -55,6 +57,8 @@ export default function Conversation() {
   const [feedbackNote, setFeedbackNote] = useState<string | null>(null);
   const [typed, setTyped] = useState("");
   const [thinking, setThinking] = useState(false);
+  // A question the member typed and FirstStep's reply to it (T-20).
+  const [exchange, setExchange] = useState<{ question: string; reply: InfoReply } | null>(null);
   const started = useRef(false);
   const moveFocus = useRef(false);
   const firstOption = useRef<HTMLButtonElement>(null);
@@ -126,6 +130,7 @@ export default function Conversation() {
       if (response.ok) {
         moveFocus.current = true;
         setLastAnswer(label);
+        setExchange(null);
         setReturning(false);
         setEditing(null);
         setLastAttempt(null);
@@ -175,11 +180,19 @@ export default function Conversation() {
       });
       const result = await response.json().catch(() => ({}));
       if (response.ok) {
+        const { reply, ...nextView } = result;
         moveFocus.current = true;
-        setLastAnswer(text);
         setTyped("");
         setReturning(false);
-        setView(result);
+        if (reply) {
+          // A question: show the reply, and stay on the same step.
+          setLastAnswer(null);
+          setExchange({ question: text, reply });
+        } else {
+          setLastAnswer(text);
+          setExchange(null);
+        }
+        setView(nextView);
       } else if (response.status === 409) {
         await load();
         setError({ message: result.message ?? SAVE_ERROR });
@@ -352,6 +365,32 @@ export default function Conversation() {
           </ChatBubble>
         )}
         {lastAnswer && <ChatBubble from="member">{lastAnswer}</ChatBubble>}
+        {exchange && (
+          <>
+            <ChatBubble from="member">{exchange.question}</ChatBubble>
+            <ChatBubble from="firststep">
+              {exchange.reply.text}
+              {exchange.reply.link && (
+                <>
+                  {" "}
+                  <Link href={exchange.reply.link.url} color="primary.dark" sx={{ fontWeight: 700 }}>
+                    {exchange.reply.link.label}
+                  </Link>
+                  .
+                </>
+              )}
+              {exchange.reply.offerPerson && (
+                <>
+                  {" "}A person can help:{" "}
+                  <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
+                    Talk to a person
+                  </AppLink>
+                  .
+                </>
+              )}
+            </ChatBubble>
+          </>
+        )}
         {question && !editing && (
           <ChatBubble from="firststep">
             <Box component="span" sx={visuallyHidden}>
