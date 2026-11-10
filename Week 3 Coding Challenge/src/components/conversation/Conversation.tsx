@@ -96,6 +96,21 @@ export default function Conversation() {
   }, [load]);
 
   useEffect(() => {
+    // Tell screen readers where a returning member left off (T-25). The
+    // announcer is on the page from the start, so the change is announced.
+    const announcer = document.getElementById("conversation-announcer");
+    if (!announcer || status !== "ready" || !returning || !view) return;
+    const step = questionFor(view.state.currentStep);
+    const message = step
+      ? `Welcome back. You were on step ${step.number} of ${QUESTIONS.length}.`
+      : "Welcome back. Your answers are saved, and your results are below.";
+    const timer = setTimeout(() => {
+      announcer.textContent = message;
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [status, returning, view]);
+
+  useEffect(() => {
     if (!moveFocus.current) return;
     moveFocus.current = false;
     // With no options left, focus the messages so it isn't lost.
