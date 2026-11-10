@@ -11,6 +11,8 @@ import type { Step } from "@/domain/conversation";
 import { NO_INFO_REPLY } from "@/domain/faq";
 import { afterMiss, missReply } from "@/domain/misses";
 import {
+  CHANGE_FOLLOW_UP,
+  changeConfirmation,
   readTypedReply,
   typedAnswerFormat,
   typedAnswerInstructions,
@@ -38,13 +40,16 @@ export type TypedAnswerResult =
 /**
  * Steps for: Answer a question in your own words
  * 1. Find who this person is, and load their own session
- * 2. Check this step takes a typed answer
+ * 2. Check this step takes typing (every step except after feedback)
  * 3. Count one Claude call against the usage limits; stop if over
- * 4. Ask Claude what kind of message it is (the words go as data)
+ * 4. Ask Claude what kind of message it is. Claude gets the saved answers
+ *    and the new message as data, never a transcript (ADR-0014).
  * 5a. An answer: recheck the value, then apply it like a tap
- * 5b. A question: reply from the approved file, or honestly say there's no
+ * 5b. A change to an earlier answer: recheck it, then apply it exactly like
+ *     the Edit button, and say what changed (T-42)
+ * 5c. A question: reply from the approved file, or honestly say there's no
  *     approved answer and log the question for coordinators (T-20, T-26)
- * The typed text is never logged anywhere else (ADR-0014).
+ * The typed text is never logged anywhere else.
  */
 export async function answerTyped(text: string): Promise<TypedAnswerResult> {
   const client = await createDataClient();
@@ -54,8 +59,15 @@ export async function answerTyped(text: string): Promise<TypedAnswerResult> {
   const session = await findSession(client, data.user.id);
   if (!session) return { status: "no_session" };
 
-  const field = typedFieldFor(session.current_step as Step);
-  if (!field) return { status: "not_allowed" };
+  const step = session.current_step as Step;
+  if (step === "feedback") return { status: "not_allowed" };
+  // The question on screen, or null on the results screen.
+  const field = typedFieldFor(step);
+  const savedAnswers = {
+    goal: session.goal,
+    experience: session.experience_level,
+    availability: session.availability,
+  };
 
   // If the limit check itself fails, Claude is not called (T-17).
   const allowed = await consumeChatQuota(client).catch((error) => {
@@ -67,21 +79,42 @@ export async function answerTyped(text: string): Promise<TypedAnswerResult> {
 
   const format = typedAnswerFormat(field);
   const claude = await askClaude({
-    purpose: `typed-${field}`,
-    system: typedAnswerInstructions(field),
+    purpose: `typed-${field ?? step}`,
+    system: typedAnswerInstructions(field, savedAnswers),
     message: typedAnswerMessage(text),
     jsonSchema: format.jsonSchema,
     validate: format.validate,
   });
   if (!claude.ok) return { status: "claude_unavailable" };
 
-  const reply = readTypedReply(field, claude.data);
+  const reply = readTypedReply(field, claude.data, savedAnswers);
   if (reply.kind === "answer") {
-    return applyAnswer(client, session, { type: "answer", field, value: reply.value });
+    if (field) return applyAnswer(client, session, { type: "answer", field, value: reply.value });
+    // readTypedReply never returns an answer without a question on screen.
+    return { status: "not_allowed" };
+  }
+  if (reply.kind === "change") {
+    // The same path as the Edit button (T-18), so both give the same result.
+    const changed = await applyAnswer(client, session, { type: "answer", field: reply.field, value: reply.value });
+    if (changed.status !== "ok") return changed;
+    return {
+      status: "reply",
+      view: changed.view,
+      reply: { text: changeConfirmation(reply.field, reply.value), link: null, offerPerson: false, offerBrowse: false },
+    };
   }
 
   const helpful = await findFeedback(client, session.id).catch(() => null);
   const view = buildView(toConversationState(session), helpful);
+
+  if (reply.kind === "change_unclear") {
+    // A short follow-up; nothing is changed.
+    return {
+      status: "reply",
+      view,
+      reply: { text: CHANGE_FOLLOW_UP, link: null, offerPerson: false, offerBrowse: false },
+    };
+  }
 
   if (reply.kind === "unclear") {
     // Not understood: rephrase once, then offer browse or a person (T-19).
