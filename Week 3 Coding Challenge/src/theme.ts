@@ -36,6 +36,38 @@ const theme = createTheme({
     body1: { fontSize: "1rem", lineHeight: 1.5 },
     button: { fontWeight: 700, textTransform: "none" },
   },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: `
+        /* A clear focus ring for keyboard users on every element (WCAG 2.4.7, 2.4.13).
+           tealDark is 7.6:1 on white and 6.6:1 on the chat bubble tint. */
+        :focus-visible {
+          outline: 3px solid ${tokens.tealDark};
+          outline-offset: 2px;
+        }
+        /* Respect a request for less motion (WCAG 2.3.3). */
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
+      `,
+    },
+    MuiButtonBase: {
+      styleOverrides: {
+        // Material UI removes the browser's outline on buttons; put a visible one back.
+        root: {
+          "&.Mui-focusVisible": {
+            outline: `3px solid ${tokens.tealDark}`,
+            outlineOffset: 2,
+          },
+        },
+      },
+    },
+  },
 });
 
 export default theme;
