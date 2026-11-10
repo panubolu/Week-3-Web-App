@@ -64,7 +64,29 @@ test("duplicate ids are refused", () => {
 });
 
 test("real content needs a last-verified date", () => {
-  const bad = { ...raw, sample: false };
+  const bad = {
+    ...raw,
+    sample: false,
+    opportunities: [{ ...raw.opportunities[0], lastVerified: null }],
+  };
+  assert.equal(contentSchema.safeParse(bad).success, false);
+});
+
+test("the real content has a contact for Talk to a person, with a backup", () => {
+  const content = contentSchema.parse(raw);
+  assert.equal(content.sample, false);
+  assert.ok(content.coordinator, "coordinator is missing");
+  assert.match(content.coordinator.backup.url, /^https:\/\//);
+});
+
+test("the contact email is a real address, not a placeholder", () => {
+  // Stops a placeholder address from ever going live.
+  const content = contentSchema.parse(raw);
+  assert.doesNotMatch(content.coordinator?.email ?? "", /@example\.(com|org)$|pending/);
+});
+
+test("a contact email that is not an email address is refused", () => {
+  const bad = { ...raw, coordinator: { ...raw.coordinator, email: "not an email" } };
   assert.equal(contentSchema.safeParse(bad).success, false);
 });
 
@@ -113,11 +135,25 @@ test("every answer combination gets a match or a clear reason", () => {
   }
 });
 
-test("the sample data can reach the no-match screen, as in Figma screen 5", () => {
+test("with the real content, every answer combination gets at least one match", () => {
+  // The no-match screen (Figma screen 5) is still covered by the tests above
+  // with made-up items; the real list happens to fit everyone.
   const content = contentSchema.parse(raw);
-  const answers = { goal: "project_experience", experience: "new_to_tech", availability: "under_5" };
-  assert.equal(findMatches(content.opportunities, answers).length, 0);
-  assert.notEqual(findAlternative(content.opportunities, answers), null);
+  for (const goal of GOALS) for (const experience of EXPERIENCE_LEVELS) for (const availability of AVAILABILITY) {
+    const found = findMatches(content.opportunities, { goal, experience, availability });
+    assert.ok(found.length > 0, `${goal} / ${experience} / ${availability} has no match`);
+  }
+});
+
+test("people new to tech are never shown project training", () => {
+  // Tech Fleet expects a bootcamp, certificate, school or self-study first.
+  const content = contentSchema.parse(raw);
+  const found = findMatches(content.opportunities, {
+    goal: "project_experience",
+    experience: "new_to_tech",
+    availability: "more_than_20",
+  });
+  assert.ok(!found.some((o) => o.id === "project-training"));
 });
 
 test("the reason uses the member's answers", () => {

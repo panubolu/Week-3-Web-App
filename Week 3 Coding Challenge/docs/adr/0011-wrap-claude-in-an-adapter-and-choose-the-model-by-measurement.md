@@ -44,5 +44,7 @@ One easy request can't separate the models on quality. Keep `claude-opus-5-5` un
 
 Both models blocked all four attempts to break the rules. `claude-opus-5-5` stays the default until Preeti chooses.
 
+**Decision, November 9, 2026:** Preeti chose to keep `claude-opus-5-5`. It was the only model with a perfect score, the cost at homework scale is a dollar or two, and both models reply well within the 3-second target. Revisit `claude-haiku-5-5` if typed traffic grows large, after improving per-day hour conversion in the instructions and re-running the rule tests.
+
 ## Consequences
 The Anthropic SDK is the only way the app calls Claude. Switching models is a setting change. Forcing a tool call is not available on Opus 5.5, so structured outputs are the way to get a fixed format. Opus 5.5 can use Anthropic's server-side refusal fallback, but Haiku 5.5 cannot, so the plain server-built reply stays as the backstop on every model. Your API key needs credit in the Anthropic Console, which is the one real cost in this project.

@@ -24,8 +24,18 @@ const opportunitySchema = z.strictObject({
 export const contentSchema = z
   .strictObject({
     sample: z.boolean(),
+    // The person members reach with "Talk to a person", plus Tech Fleet's
+    // official contact as a backup (ADR-0015).
     coordinator: z
-      .strictObject({ label: z.string().min(1), url: z.url({ protocol: /^https$/ }) })
+      .strictObject({
+        name: z.string().min(1).max(60),
+        role: z.string().min(1).max(100),
+        email: z.email(),
+        backup: z.strictObject({
+          label: z.string().min(1).max(80),
+          url: z.url({ protocol: /^https$/ }),
+        }),
+      })
       .nullable(),
     opportunities: z.array(opportunitySchema).min(1),
   })
