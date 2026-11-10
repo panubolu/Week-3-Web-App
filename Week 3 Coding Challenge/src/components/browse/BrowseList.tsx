@@ -100,6 +100,9 @@ export default function BrowseList({ items, sample }: Props) {
               <AppLink href="/" color="primary.dark">
                 Answer 3 questions instead
               </AppLink>
+              <AppLink href="/talk-to-a-person" color="primary.dark">
+                Talk to a person
+              </AppLink>
             </Stack>
           </Paper>
         ) : (

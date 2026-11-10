@@ -26,6 +26,9 @@ export function SiteHeader() {
         FirstStep
       </AppLink>
       <Box component="nav" aria-label="Main" sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+        <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
+          Talk to a person
+        </AppLink>
         <AppLink href="/browse" color="primary.dark">
           Browse all
         </AppLink>

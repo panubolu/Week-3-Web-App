@@ -252,8 +252,12 @@ export default function Conversation() {
           While you wait, you can{" "}
           <AppLink href="/browse" color="primary.dark" sx={{ fontWeight: 700 }}>
             browse all opportunities
+          </AppLink>{" "}
+          or{" "}
+          <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
+            talk to a person
           </AppLink>
-          . It works even when FirstStep can&apos;t save progress.
+          . Both work even when FirstStep can&apos;t save progress.
         </Typography>
       </Box>
     );
@@ -336,7 +340,9 @@ export default function Conversation() {
               questions and suggest a first step that fits you.
             </ChatBubble>
             <ChatBubble from="firststep">
-              I only use approved Tech Fleet information.
+              I only use approved Tech Fleet information, and a real person is
+              available at any time. Just choose &quot;Talk to a person&quot; at
+              the top.
             </ChatBubble>
           </>
         )}
@@ -499,7 +505,11 @@ export default function Conversation() {
           <AppLink href="/browse" color="primary.dark" sx={{ fontWeight: 700 }}>
             browse all opportunities
           </AppLink>{" "}
-          and choose your own way.
+          and choose your own way, or{" "}
+          <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
+            talk to a person
+          </AppLink>
+          .
         </Typography>
       )}
 
