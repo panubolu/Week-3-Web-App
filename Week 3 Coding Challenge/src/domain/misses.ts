@@ -31,7 +31,12 @@ const REPHRASED: Record<AnswerField, string> = {
 export const HELP_AFTER_MISSES =
   "I'm having trouble understanding, and I don't want to keep you stuck. You can tap one of the options, or try one of these instead:";
 
-/** FirstStep's fixed wording for a miss. */
-export function missReply(field: AnswerField, response: MissResponse): string {
-  return response === "rephrase" ? REPHRASED[field] : HELP_AFTER_MISSES;
+// On the results screen there's no question on screen, so explain what typing can do.
+const RESULTS_REPHRASE =
+  "I didn't quite catch that. You can change an answer by typing, for example \"Actually I have 5 hours a week\", or ask me a question about Tech Fleet.";
+
+/** FirstStep's fixed wording for a miss. `field` is null on the results screen. */
+export function missReply(field: AnswerField | null, response: MissResponse): string {
+  if (response === "offer_help") return HELP_AFTER_MISSES;
+  return field ? REPHRASED[field] : RESULTS_REPHRASE;
 }

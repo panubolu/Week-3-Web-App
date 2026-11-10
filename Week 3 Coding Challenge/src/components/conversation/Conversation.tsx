@@ -519,12 +519,12 @@ export default function Conversation() {
         </Box>
       )}
 
-      {(question || noMatch) && !editing && (
+      {(question || noMatch || state.currentStep === "results") && !editing && (
         <Box component="form" onSubmit={sendTyped} noValidate sx={{ mt: 3 }}>
           <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
             <TextField
               id="typed-answer"
-              label="Or type your answer"
+              label={question || noMatch ? "Or type your answer" : "Change an answer or ask a question"}
               value={typed}
               onChange={(event) => setTyped(event.target.value)}
               disabled={saving}

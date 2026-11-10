@@ -30,3 +30,8 @@ test("each question has its own rephrase, and help has its own wording", () => {
   assert.match(missReply("availability", "rephrase"), /hours/);
   assert.equal(missReply("goal", "offer_help"), HELP_AFTER_MISSES);
 });
+
+test("on the results screen, a miss explains what typing can do", () => {
+  assert.match(missReply(null, "rephrase"), /Actually I have 5 hours/);
+  assert.equal(missReply(null, "offer_help"), HELP_AFTER_MISSES);
+});
