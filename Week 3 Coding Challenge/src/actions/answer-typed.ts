@@ -2,20 +2,34 @@ import "server-only";
 
 import { askClaude } from "@/adapters/claude";
 import { createDataClient } from "@/data/client";
+import { content } from "@/data/content";
+import { findFeedback } from "@/data/feedback";
 import { consumeChatQuota } from "@/data/quota";
-import { findSession } from "@/data/sessions";
+import { findSession, toConversationState } from "@/data/sessions";
+import { addUnansweredQuestion } from "@/data/unanswered";
 import type { Step } from "@/domain/conversation";
+import { NO_INFO_REPLY } from "@/domain/faq";
 import {
-  acceptedValue,
+  readTypedReply,
   typedAnswerFormat,
   typedAnswerInstructions,
   typedAnswerMessage,
   typedFieldFor,
 } from "@/domain/typed-answer";
 import { applyAnswer, type AnswerResult } from "./answer-question";
+import { buildView, type ConversationView } from "./view";
+
+/** FirstStep's reply to a question. Text and links come only from the approved file. */
+export type InfoReply = {
+  text: string;
+  link: { label: string; url: string } | null;
+  /** True for the honest "I don't know" reply, which points to a person. */
+  offerPerson: boolean;
+};
 
 export type TypedAnswerResult =
   | AnswerResult
+  | { status: "question"; view: ConversationView; reply: InfoReply }
   | { status: "unclear" | "limited" | "claude_unavailable" };
 
 /**
@@ -23,9 +37,11 @@ export type TypedAnswerResult =
  * 1. Find who this person is, and load their own session
  * 2. Check this step takes a typed answer
  * 3. Count one Claude call against the usage limits; stop if over
- * 4. Ask Claude which allowed option the words mean (the words go as data)
- * 5. Recheck the value against the allowed list, then apply it like a tap
- * The typed text is never stored or logged (ADR-0014).
+ * 4. Ask Claude what kind of message it is (the words go as data)
+ * 5a. An answer: recheck the value, then apply it like a tap
+ * 5b. A question: reply from the approved file, or honestly say there's no
+ *     approved answer and log the question for coordinators (T-20, T-26)
+ * The typed text is never logged anywhere else (ADR-0014).
  */
 export async function answerTyped(text: string): Promise<TypedAnswerResult> {
   const client = await createDataClient();
@@ -47,17 +63,34 @@ export async function answerTyped(text: string): Promise<TypedAnswerResult> {
   if (!allowed) return { status: "limited" };
 
   const format = typedAnswerFormat(field);
-  const reply = await askClaude({
+  const claude = await askClaude({
     purpose: `typed-${field}`,
     system: typedAnswerInstructions(field),
     message: typedAnswerMessage(text),
     jsonSchema: format.jsonSchema,
     validate: format.validate,
   });
-  if (!reply.ok) return { status: "claude_unavailable" };
+  if (!claude.ok) return { status: "claude_unavailable" };
 
-  const value = acceptedValue(field, reply.data.value);
-  if (!value) return { status: "unclear" };
+  const reply = readTypedReply(field, claude.data);
+  if (reply.kind === "unclear") return { status: "unclear" };
+  if (reply.kind === "answer") {
+    return applyAnswer(client, session, { type: "answer", field, value: reply.value });
+  }
 
-  return applyAnswer(client, session, { type: "answer", field, value });
+  // A question. The step doesn't change, so the conversation continues.
+  const approved = reply.topic === "other" ? undefined : content.faq.find((entry) => entry.topic === reply.topic);
+  const info: InfoReply = approved
+    ? { text: approved.answer, link: approved.link, offerPerson: approved.topic === "acceptance_chances" }
+    : { text: NO_INFO_REPLY, link: null, offerPerson: true };
+
+  if (!approved) {
+    // A failed log never blocks the member (T-26).
+    await addUnansweredQuestion(client, { sessionId: session.id, userId: session.user_id, text }).catch(
+      (error) => console.error("Unanswered question not logged:", error),
+    );
+  }
+
+  const helpful = await findFeedback(client, session.id).catch(() => null);
+  return { status: "question", view: buildView(toConversationState(session), helpful), reply: info };
 }
