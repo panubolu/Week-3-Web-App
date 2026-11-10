@@ -379,7 +379,20 @@ export default function Conversation() {
                   .
                 </>
               )}
-              {exchange.reply.offerPerson && (
+              {exchange.reply.offerBrowse && exchange.reply.offerPerson && (
+                <>
+                  {" "}
+                  <AppLink href="/browse" color="primary.dark" sx={{ fontWeight: 700 }}>
+                    Browse all opportunities
+                  </AppLink>{" "}
+                  or{" "}
+                  <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
+                    talk to a person
+                  </AppLink>
+                  .
+                </>
+              )}
+              {exchange.reply.offerPerson && !exchange.reply.offerBrowse && (
                 <>
                   {" "}A person can help:{" "}
                   <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>

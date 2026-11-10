@@ -5,10 +5,11 @@ import { createDataClient } from "@/data/client";
 import { content } from "@/data/content";
 import { findFeedback } from "@/data/feedback";
 import { consumeChatQuota } from "@/data/quota";
-import { findSession, toConversationState } from "@/data/sessions";
+import { findSession, saveSession, toConversationState, withMissCount } from "@/data/sessions";
 import { addUnansweredQuestion } from "@/data/unanswered";
 import type { Step } from "@/domain/conversation";
 import { NO_INFO_REPLY } from "@/domain/faq";
+import { afterMiss, missReply } from "@/domain/misses";
 import {
   readTypedReply,
   typedAnswerFormat,
@@ -19,18 +20,20 @@ import {
 import { applyAnswer, type AnswerResult } from "./answer-question";
 import { buildView, type ConversationView } from "./view";
 
-/** FirstStep's reply to a question. Text and links come only from the approved file. */
+/** FirstStep's reply that doesn't change the step. Its wording is fixed or from the approved file. */
 export type InfoReply = {
   text: string;
   link: { label: string; url: string } | null;
-  /** True for the honest "I don't know" reply, which points to a person. */
+  /** Points to Talk to a person. */
   offerPerson: boolean;
+  /** Points to the browse view (after two misses, T-19). */
+  offerBrowse: boolean;
 };
 
 export type TypedAnswerResult =
   | AnswerResult
-  | { status: "question"; view: ConversationView; reply: InfoReply }
-  | { status: "unclear" | "limited" | "claude_unavailable" };
+  | { status: "reply"; view: ConversationView; reply: InfoReply }
+  | { status: "limited" | "claude_unavailable" };
 
 /**
  * Steps for: Answer a question in your own words
@@ -73,16 +76,31 @@ export async function answerTyped(text: string): Promise<TypedAnswerResult> {
   if (!claude.ok) return { status: "claude_unavailable" };
 
   const reply = readTypedReply(field, claude.data);
-  if (reply.kind === "unclear") return { status: "unclear" };
   if (reply.kind === "answer") {
     return applyAnswer(client, session, { type: "answer", field, value: reply.value });
+  }
+
+  const helpful = await findFeedback(client, session.id).catch(() => null);
+  const view = buildView(toConversationState(session), helpful);
+
+  if (reply.kind === "unclear") {
+    // Not understood: rephrase once, then offer browse or a person (T-19).
+    const miss = afterMiss(session.miss_count);
+    const saved = await saveSession(client, session, withMissCount(session, miss.missCount));
+    if (!saved) return { status: "conflict" };
+    const help = miss.response === "offer_help";
+    return {
+      status: "reply",
+      view,
+      reply: { text: missReply(field, miss.response), link: null, offerPerson: help, offerBrowse: help },
+    };
   }
 
   // A question. The step doesn't change, so the conversation continues.
   const approved = reply.topic === "other" ? undefined : content.faq.find((entry) => entry.topic === reply.topic);
   const info: InfoReply = approved
-    ? { text: approved.answer, link: approved.link, offerPerson: approved.topic === "acceptance_chances" }
-    : { text: NO_INFO_REPLY, link: null, offerPerson: true };
+    ? { text: approved.answer, link: approved.link, offerPerson: approved.topic === "acceptance_chances", offerBrowse: false }
+    : { text: NO_INFO_REPLY, link: null, offerPerson: true, offerBrowse: false };
 
   if (!approved) {
     // A failed log never blocks the member (T-26).
@@ -91,6 +109,5 @@ export async function answerTyped(text: string): Promise<TypedAnswerResult> {
     );
   }
 
-  const helpful = await findFeedback(client, session.id).catch(() => null);
-  return { status: "question", view: buildView(toConversationState(session), helpful), reply: info };
+  return { status: "reply", view, reply: info };
 }

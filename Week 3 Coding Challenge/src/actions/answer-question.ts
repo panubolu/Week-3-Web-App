@@ -11,6 +11,7 @@ import {
   type SessionRow,
 } from "@/data/sessions";
 import { decide, type ConversationEvent } from "@/domain/conversation";
+import { MISS_COUNT_AFTER_ANSWER } from "@/domain/misses";
 import { buildView, hasMatches, type ConversationView } from "./view";
 
 export type AnswerResult =
@@ -39,6 +40,8 @@ export async function applyAnswer(
     experience_level: next.experience,
     availability: next.availability,
     completed: next.completed,
+    // An answer that lands resets the misunderstanding count (T-19).
+    miss_count: MISS_COUNT_AFTER_ANSWER,
   });
   if (!saved) return { status: "conflict" };
 

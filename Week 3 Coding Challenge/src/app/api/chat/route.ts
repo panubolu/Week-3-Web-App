@@ -42,10 +42,6 @@ const refusals = {
     status: 400,
     message: "Please type an answer first, or choose one of the options.",
   },
-  unclear: {
-    status: 422,
-    message: `I didn't quite catch that. Could you say it another way? ${BUTTONS_STILL_WORK}`,
-  },
   limited: {
     status: 429,
     message: `You've reached the typing limit for now. You can try typing again in about an hour. ${BUTTONS_STILL_WORK}`,
@@ -61,7 +57,7 @@ type Refusal = keyof typeof refusals;
 function refuse(reason: Refusal) {
   const refusal = refusals[reason];
   // Security log: the reason only, never the request body or who sent it.
-  if (reason !== "unclear") console.warn(`Chat refused: ${reason}`);
+  console.warn(`Chat refused: ${reason}`);
   return NextResponse.json({ error: reason, message: refusal.message }, { status: refusal.status });
 }
 
@@ -88,8 +84,8 @@ export async function POST(request: Request) {
     }
 
     if (result.status === "ok") return NextResponse.json(result.view);
-    // A question: the same view, plus FirstStep's approved or honest reply.
-    if (result.status === "question") return NextResponse.json({ ...result.view, reply: result.reply });
+    // A question or a misunderstanding: the same view, plus FirstStep's reply.
+    if (result.status === "reply") return NextResponse.json({ ...result.view, reply: result.reply });
     return refuse(result.status);
   } catch (error) {
     // Details stay in server logs. The browser gets a plain message.

@@ -12,16 +12,29 @@ export type SessionRow = {
   experience_level: string | null;
   availability: string | null;
   completed: boolean;
+  miss_count: number;
   version: number;
 };
 
 export type SessionChanges = Pick<
   SessionRow,
-  "current_step" | "goal" | "experience_level" | "availability" | "completed"
+  "current_step" | "goal" | "experience_level" | "availability" | "completed" | "miss_count"
 >;
 
 const COLUMNS =
-  "id, user_id, current_step, goal, experience_level, availability, completed, version";
+  "id, user_id, current_step, goal, experience_level, availability, completed, miss_count, version";
+
+/** The same session with only the miss count changed (T-19). */
+export function withMissCount(session: SessionRow, missCount: number): SessionChanges {
+  return {
+    current_step: session.current_step,
+    goal: session.goal,
+    experience_level: session.experience_level,
+    availability: session.availability,
+    completed: session.completed,
+    miss_count: missCount,
+  };
+}
 const UNIQUE_VIOLATION = "23505";
 
 export function toConversationState(session: SessionRow): ConversationState {
