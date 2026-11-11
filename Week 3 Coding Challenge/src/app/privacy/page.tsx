@@ -8,8 +8,9 @@ export const metadata: Metadata = { title: "Privacy | FirstStep" };
 
 const STORED = [
   "Your answers to the three questions: goal, experience and hours a week.",
-  "Which step you reached, and which recommendations you opened, so we can improve FirstStep.",
+  "Which step you reached, which recommendations you opened, and when you chose \"Talk to a person\", so we can improve FirstStep.",
   "Your answer to \"Was this helpful?\".",
+  "Questions you type that FirstStep can't answer yet, with email addresses and phone numbers removed, so the team can add approved answers.",
 ];
 
 export default function PrivacyPage() {
@@ -34,8 +35,8 @@ export default function PrivacyPage() {
         ))}
       </Box>
       <Typography sx={{ mb: 2 }}>
-        FirstStep does not save a copy of your conversation, and it does not ask
-        for your name.
+        Apart from those questions, FirstStep does not save a copy of your
+        conversation, and it does not ask for your name.
       </Typography>
 
       <Typography variant="h2" sx={{ mt: 4, mb: 1 }}>
@@ -61,8 +62,10 @@ export default function PrivacyPage() {
         How long we keep it
       </Typography>
       <Typography sx={{ mb: 2 }}>
-        Guest progress is deleted automatically after 30 days without a visit.
-        If you saved your progress with Google, we keep it until you delete it.
+        Guest progress is deleted automatically 30 days after your last saved
+        answer. Questions FirstStep couldn&apos;t answer are deleted after 30
+        days. If you saved your progress with Google, we keep your answers until
+        you delete them.
       </Typography>
 
       <Typography variant="h2" sx={{ mt: 4, mb: 1 }}>

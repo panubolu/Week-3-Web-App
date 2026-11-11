@@ -86,9 +86,9 @@ export default function DeleteMyData() {
         <DialogTitle id="delete-title">Delete your FirstStep data?</DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-text" sx={{ mb: failed ? 2 : 0 }}>
-            This removes your answers, your feedback and your FirstStep account
-            for good. It can&apos;t be undone. Your Google account is not
-            affected.
+            This removes your answers, your feedback, any questions you typed
+            that FirstStep couldn&apos;t answer, and your FirstStep account for
+            good. It can&apos;t be undone. Your Google account is not affected.
           </DialogContentText>
           {failed && (
             <Alert severity="error" role="alert">
