@@ -1,7 +1,7 @@
 # ADR-0012: Keep approved content in a JSON file
 
 ## Date and status
-November 4, 2026. Proposed.
+November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 
 ## Context
 TR-06 and TR-17 put content in one file. Opportunities are public, change occasionally, and must match in chat and browse.
