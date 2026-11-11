@@ -1,7 +1,7 @@
 # ADR-0006: Organize rules as Transaction Scripts
 
 ## Date and status
-November 4, 2026. Proposed.
+November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 
 ## Context
 FirstStep's rules are few and simple.

@@ -1,13 +1,13 @@
 # FirstStep Technical Architecture
 
 **Owner:** Preeti Anubolu, Premium Residency (Advanced homework track)
-**Status:** Draft for your review
-**Date:** November 4, 2026
+**Status:** Approved and built. MVP #1 is live at https://firststep-app-nine.vercel.app. All 16 ADRs are accepted (November 10, 2026); three still wait on a teacher check (0004, 0010, 0013).
+**Date:** November 4, 2026 (status updated November 10, 2026)
 **Product:** FirstStep, a conversational guide that helps new Tech Fleet members find a confident first step, using only approved content, with a real person one click away.
 
 **Notion copy:** [Week 4 FirstStep Technical Architecture](https://app.notion.com/p/40f360ed631c81ba9de5cafbf7a8f070)
 
-This is the blueprint to approve before anyone writes code. It covers Step 5 of your Build and Launch Checklist (architect the app), drafts Step 6 (ADRs) and drafts Step 7 (database design).
+This blueprint was approved before the code was written, and MVP #1 was then built from it. It covers Step 5 of your Build and Launch Checklist (architect the app), Step 6 (ADRs) and Step 7 (database design). Later decisions are recorded as new ADRs in `docs/adr`.
 
 It follows the 9-step Language of Change process from the Week 4 lecture. Each step opens with a short lesson, then applies it to FirstStep.
 
@@ -27,12 +27,12 @@ In this class, you and Claude share the architect hat, and Claude wears the deve
 
 ### Five decisions that need you
 
-Everything below works as a recommendation, but these are yours to approve. Open decisions are marked **Proposed** in the ADR list.
+These were the decisions that needed you. All five are now decided.
 
 | # | Decision | My recommendation | Why it needs you |
 |---|---|---|---|
 | 1 | How people sign in (ADR-0010) | **Decided November 4, 2026:** start as a guest, then optionally sign in with Google to keep progress | Still check with your teacher that optional sign-in meets the homework. |
-| 2 | Which Claude model (ADR-0011) | Decide after measuring both. The design starts on Opus 5.5 at low effort. | Opus 5.5 costs about 40 times as much as Haiku 5.5 per token. |
+| 2 | Which Claude model (ADR-0011) | **Decided November 9, 2026:** keep Opus 5.5 at low effort, the only model with a perfect rule-test score | Opus 5.5 costs about 40 times as much as Haiku 5.5 per token. |
 | 3 | Build the browse view now? (ADR-0013) | **Decided November 5, 2026:** yes, a simple version | It is a "Could" in your spec, but two "Must" requirements depend on it. |
 | 4 | Where the code goes (ADR-0004) | **Decided November 4, 2026:** a new, dedicated repository, with the app in the `Week 3 Coding Challenge` folder | The homework says not to make a new repo, while the lecture says to. Tell your teacher, because the homework is about your submission. |
 | 5 | Data region (ADR-0009) | **Decided November 5, 2026:** US East for both Vercel and Supabase | I assumed most members are in the Americas. A Supabase region is hard to change later. |
@@ -504,7 +504,7 @@ Week 4 Coding Challenge/       Your SUBMISSION.md
 
 **Lesson:** An ADR records one hard-to-change decision and why it was made. Each one becomes its own file in `docs/adr`, in your class template format. Never erase an old ADR. If a decision changes, write a new one that replaces it.
 
-The summaries below hold the reasoning. **Accepted** means the course requires it, and **Proposed** means it waits for your approval.
+The summaries below hold the reasoning for ADRs 0001 to 0014, as first drafted. The files in `docs/adr` are the current versions, and ADRs 0015 and 0016 were added during the build. **Accepted** means the course requires it or Preeti approved it.
 
 | ADR | Decision | Status |
 |---|---|---|
@@ -512,16 +512,18 @@ The summaries below hold the reasoning. **Accepted** means the course requires i
 | 0002 | Host on Vercel | Accepted |
 | 0003 | Use Supabase for the database and accounts | Accepted |
 | 0004 | Layered modular monolith in a new, dedicated repo | Accepted, teacher check pending |
-| 0005 | The server owns the conversation (State Machine) | Proposed |
-| 0006 | Organize rules as Transaction Scripts | Proposed |
-| 0007 | Reach data through Table Data Gateways | Proposed |
-| 0008 | Server-first screens, no database calls from the browser | Proposed |
+| 0005 | The server owns the conversation (State Machine) | Accepted November 10, 2026 |
+| 0006 | Organize rules as Transaction Scripts | Accepted November 10, 2026 |
+| 0007 | Reach data through Table Data Gateways | Accepted November 10, 2026 |
+| 0008 | Server-first screens, no database calls from the browser | Accepted November 10, 2026 |
 | 0009 | US East region, with defined timeouts and fallbacks | Accepted |
 | 0010 | Guest first, with optional Google sign-in | Accepted, teacher check pending |
-| 0011 | Wrap Claude in an Adapter and choose the model by measurement | Proposed |
-| 0012 | Keep approved content in a JSON file | Proposed |
+| 0011 | Wrap Claude in an Adapter and choose the model by measurement | Accepted November 9, 2026 (Opus 5.5) |
+| 0012 | Keep approved content in a JSON file | Accepted November 10, 2026 |
 | 0013 | Build a simple browse view in MVP #1 | Accepted, teacher check pending |
-| 0014 | Store no chat transcripts | Proposed |
+| 0014 | Store no chat transcripts | Accepted November 10, 2026 |
+| 0015 | A named member is the Talk to a person contact | Accepted November 9, 2026 |
+| 0016 | FirstStep writes the recommendation reasons, not Claude | Accepted November 10, 2026 |
 
 ## ADR-0001: Use Next.js with Material UI
 
@@ -566,7 +568,7 @@ The summaries below hold the reasoning. **Accepted** means the course requires i
 
 ## ADR-0005: The server owns the conversation
 
-**Date and status:** November 4, 2026. Proposed.
+**Date and status:** November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 **Context:** TR-03 has Claude return the current step. That makes every turn depend on Claude, and it lets a model error change the flow. The lecture pairs "something that moves through stages" with a State Machine.
 **Options:**
 - Claude controls the flow. Good: less code. Bad: every step costs money, adds delay and can drift.
@@ -576,7 +578,7 @@ The summaries below hold the reasoning. **Accepted** means the course requires i
 
 ## ADR-0006: Organize rules as Transaction Scripts
 
-**Date and status:** November 4, 2026. Proposed.
+**Date and status:** November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 **Context:** FirstStep's rules are few and simple.
 **Options:**
 - Transaction Script. Good: easiest. Bad: can tangle as rules grow.
@@ -587,7 +589,7 @@ The summaries below hold the reasoning. **Accepted** means the course requires i
 
 ## ADR-0007: Reach data through Table Data Gateways
 
-**Date and status:** November 4, 2026. Proposed.
+**Date and status:** November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 **Context:** The lecture matches Transaction Scripts with Gateways. Database code must stay in one place.
 **Options:**
 - Table Data Gateway. Good: simple, one file per table. Bad: a little repetition.
@@ -597,7 +599,7 @@ The summaries below hold the reasoning. **Accepted** means the course requires i
 
 ## ADR-0008: Server-first screens, with no database calls from the browser
 
-**Date and status:** November 4, 2026. Proposed.
+**Date and status:** November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 **Context:** The class rule is that the screen never talks to the database. Speed targets also favor sending less JavaScript.
 **Options:**
 - Browser calls Supabase directly. Good: less server code. Bad: this is two-tier, and it breaks the class rule.
@@ -640,7 +642,7 @@ We also found a practical limit. Supabase's built-in email only delivers to your
 
 ## ADR-0011: Wrap Claude in an Adapter, and choose the model by measurement
 
-**Date and status:** November 4, 2026. Proposed.
+**Date and status:** November 4, 2026. Accepted by Preeti Anubolu on November 9, 2026, choosing `claude-opus-5-5`.
 **Context:** Claude is an outside service. Its details should stay in one file, and cost and speed both matter. Prices below are Anthropic list prices for each million tokens, cached October 6, 2026. Confirm them in the Console before budgeting.
 
 | Model | Input | Output | Estimated cost per Claude call | Note |
@@ -659,7 +661,7 @@ These estimates assume 2,000 input tokens and 300 output tokens per call. Thinki
 
 ## ADR-0012: Keep approved content in a JSON file
 
-**Date and status:** November 4, 2026. Proposed.
+**Date and status:** November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 **Context:** TR-06 and TR-17 put content in one file. Opportunities are public, change occasionally, and must match in chat and browse.
 **Options:**
 - JSON file in the repo. Good: reviewed, versioned, simple. Bad: updates need a deploy.
@@ -679,7 +681,7 @@ These estimates assume 2,000 input tokens and 300 output tokens per call. Thinki
 
 ## ADR-0014: Store no chat transcripts
 
-**Date and status:** November 4, 2026. Proposed.
+**Date and status:** November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 **Context:** The specs do not say where conversation history lives, yet TR-16 says to send recent history. Saved transcripts would create the very privacy risk TR-14 is trying to avoid. A history sent from the browser could also be altered.
 **Options:**
 - Save every message. Good: full context. Bad: stores free text that may be personal.

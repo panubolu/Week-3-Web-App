@@ -1,7 +1,7 @@
 # ADR-0014: Store no chat transcripts
 
 ## Date and status
-November 4, 2026. Proposed.
+November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 
 ## Context
 The specs do not say where conversation history lives, yet TR-16 says to send recent history. Saved transcripts would create the very privacy risk TR-14 is trying to avoid. A history sent from the browser could also be altered.

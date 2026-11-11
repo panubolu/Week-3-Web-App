@@ -1,7 +1,7 @@
 # ADR-0008: Server-first screens, with no database calls from the browser
 
 ## Date and status
-November 4, 2026. Proposed.
+November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 
 ## Context
 The class rule is that the screen never talks to the database. Speed targets also favor sending less JavaScript.

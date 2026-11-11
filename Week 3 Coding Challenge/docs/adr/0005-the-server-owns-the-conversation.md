@@ -1,7 +1,7 @@
 # ADR-0005: The server owns the conversation
 
 ## Date and status
-November 4, 2026. Proposed.
+November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 
 ## Context
 TR-03 has Claude return the current step. That makes every turn depend on Claude, and it lets a model error change the flow. The lecture pairs "something that moves through stages" with a State Machine.

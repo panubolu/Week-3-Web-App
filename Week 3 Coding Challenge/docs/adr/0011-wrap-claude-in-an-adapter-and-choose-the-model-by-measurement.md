@@ -1,7 +1,7 @@
 # ADR-0011: Wrap Claude in an Adapter, and choose the model by measurement
 
 ## Date and status
-November 4, 2026. Proposed.
+November 4, 2026. Accepted by Preeti Anubolu on November 9, 2026, choosing `claude-opus-5-5` (see the decision below).
 
 ## Context
 Claude is an outside service. Its details should stay in one file, and cost and speed both matter. Prices below are Anthropic list prices for each million tokens, cached October 6, 2026. Confirm them in the Console before budgeting.

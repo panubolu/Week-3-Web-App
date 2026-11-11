@@ -1,7 +1,7 @@
 # ADR-0007: Reach data through Table Data Gateways
 
 ## Date and status
-November 4, 2026. Proposed.
+November 4, 2026. Accepted by Preeti Anubolu on November 10, 2026.
 
 ## Context
 The lecture matches Transaction Scripts with Gateways. Database code must stay in one place.
