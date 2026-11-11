@@ -1,8 +1,9 @@
 import "server-only";
 
 import { createDataClient } from "@/data/client";
+import type { GoogleMode } from "@/domain/sign-in";
 
-export type GoogleMode = "save" | "sign-in";
+export type { GoogleMode };
 
 /**
  * Steps for: Save my progress, or sign in to saved progress
