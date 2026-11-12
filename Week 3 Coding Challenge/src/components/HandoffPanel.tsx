@@ -6,6 +6,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
 import AppLink from "@/components/AppLink";
+import { dataDeletions } from "@/components/session-signal";
 
 type Props = { email: string; firstName: string };
 type Load = "loading" | "ready" | "failed";
@@ -21,13 +22,21 @@ export default function HandoffPanel({ email, firstName }: Props) {
   const [load, setLoad] = useState<Load>("loading");
   const [summary, setSummary] = useState("");
   const [copyNote, setCopyNote] = useState("");
-  const sent = useRef(false);
+  const seenDeletions = useRef(dataDeletions());
 
   useEffect(() => {
-    // React runs effects twice in development; record only once.
+    // Runs each time the page is shown, including when the member comes back
+    // to it, so the visit is recorded and the summary matches their latest
+    // answers. After Delete my data, the old summary is cleared first.
+    // React runs effects twice in development; the first run's timer is
+    // cancelled, so each visit is recorded once.
     const timer = setTimeout(async () => {
-      if (sent.current) return;
-      sent.current = true;
+      if (dataDeletions() !== seenDeletions.current) {
+        seenDeletions.current = dataDeletions();
+        setSummary("");
+        setLoad("loading");
+      }
+      setCopyNote("");
       try {
         const response = await fetch("/api/handoff", { method: "POST", signal: AbortSignal.timeout(15000) });
         const body = await response.json();

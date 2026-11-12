@@ -12,6 +12,7 @@ import Link from "@mui/material/Link";
 import type { InfoReply } from "@/actions/answer-typed";
 import type { ConversationView } from "@/actions/view";
 import AppLink from "@/components/AppLink";
+import { dataDeletions } from "@/components/session-signal";
 import { TYPED_MAX, type AnswerField, type ConversationState } from "@/domain/conversation";
 import ChatBubble from "./ChatBubble";
 import OpportunityCard from "./OpportunityCard";
@@ -60,18 +61,23 @@ export default function Conversation() {
   // A question the member typed and FirstStep's reply to it (T-20).
   const [exchange, setExchange] = useState<{ question: string; reply: InfoReply } | null>(null);
   const started = useRef(false);
+  const seenDeletions = useRef(dataDeletions());
   const moveFocus = useRef(false);
   const firstOption = useRef<HTMLButtonElement>(null);
   const messages = useRef<HTMLDivElement>(null);
   const editButtons = useRef<Partial<Record<AnswerField, HTMLButtonElement | null>>>({});
 
-  const load = useCallback(async () => {
-    setStatus("loading");
-    setError(null);
+  /** Loads the member's saved progress. A quiet load keeps the screen as it
+   *  is until the new answers arrive, and leaves it alone if loading fails. */
+  const load = useCallback(async (quiet = false) => {
+    if (!quiet) {
+      setStatus("loading");
+      setError(null);
+    }
     try {
       const response = await fetch("/api/session", { method: "POST", signal: timeLimit() });
       if (!response.ok) {
-        setStatus("failed");
+        if (!quiet) setStatus("failed");
         return;
       }
       const session = await response.json();
@@ -80,20 +86,40 @@ export default function Conversation() {
       setReturning(hasAnswers(session.view.state));
       setStatus("ready");
     } catch {
-      setStatus("failed");
+      if (!quiet) setStatus("failed");
     }
   }, []);
 
+  /** Clears what was shown on screen, so nothing from before carries over. */
+  const forgetScreen = useCallback(() => {
+    setLastAnswer(null);
+    setEditing(null);
+    setLastAttempt(null);
+    setFeedbackNote(null);
+    setExchange(null);
+    setTyped("");
+  }, []);
+
   useEffect(() => {
-    // React runs effects twice in development. The first run's timer is
-    // cancelled, so only the second one loads, and only one guest is created.
+    // Runs when the page first appears and again each time the member comes
+    // back to it: Next.js keeps visited pages ready in the background, so
+    // without this a returning page could show old answers. After Delete my
+    // data it starts fresh; otherwise it updates quietly.
+    // React runs effects twice in development; the first run's timer is
+    // cancelled, so only one load happens and only one guest is created.
     const timer = setTimeout(() => {
-      if (started.current) return;
-      started.current = true;
-      load();
+      const deleted = dataDeletions() !== seenDeletions.current;
+      seenDeletions.current = dataDeletions();
+      if (!started.current || deleted) {
+        started.current = true;
+        if (deleted) forgetScreen();
+        load();
+      } else {
+        load(true);
+      }
     }, 0);
     return () => clearTimeout(timer);
-  }, [load]);
+  }, [load, forgetScreen]);
 
   useEffect(() => {
     // Tell screen readers where a returning member left off (T-25). The
@@ -268,7 +294,7 @@ export default function Conversation() {
         <Alert
           severity="error"
           action={
-            <Button color="inherit" size="small" onClick={load} sx={{ minHeight: 32 }}>
+            <Button color="inherit" size="small" onClick={() => load()} sx={{ minHeight: 32 }}>
               Try again
             </Button>
           }
