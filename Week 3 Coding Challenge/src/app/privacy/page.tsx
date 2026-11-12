@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Privacy | FirstStep" };
 
 const STORED = [
   "Your answers to the three questions: goal, experience and hours a week.",
-  "Which step you reached, which recommendations you opened, and when you chose \"Talk to a person\", so we can improve FirstStep.",
+  "Which step you reached, which recommendations you opened, and when you chose \"Email a person\", so we can improve FirstStep.",
   "Your answer to \"Was this helpful?\".",
   "Questions you type that FirstStep can't answer yet, with email addresses and phone numbers removed, so the team can add approved answers.",
 ];

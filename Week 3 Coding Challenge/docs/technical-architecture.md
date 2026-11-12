@@ -524,6 +524,7 @@ The summaries below hold the reasoning for ADRs 0001 to 0014, as first drafted. 
 | 0014 | Store no chat transcripts | Accepted November 10, 2026 |
 | 0015 | A named member is the Talk to a person contact | Accepted November 9, 2026 |
 | 0016 | FirstStep writes the recommendation reasons, not Claude | Accepted November 10, 2026 |
+| 0017 | Rename "Talk to a person" to "Email a person", and show it inside the conversation (version 2) | Accepted November 12, 2026 |
 
 ## ADR-0001: Use Next.js with Material UI
 

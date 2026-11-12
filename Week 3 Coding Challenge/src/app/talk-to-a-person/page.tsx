@@ -6,7 +6,8 @@ import Typography from "@mui/material/Typography";
 import HandoffPanel from "@/components/HandoffPanel";
 import { content } from "@/data/content";
 
-export const metadata: Metadata = { title: "Talk to a person | FirstStep" };
+// The address stays /talk-to-a-person so old links keep working (ADR-0017).
+export const metadata: Metadata = { title: "Email a person | FirstStep" };
 
 // Built from the approved content file, so the contact shows even when the
 // database or Claude is down (T-22). The summary loads after (T-23).
@@ -16,11 +17,11 @@ export default function TalkToAPersonPage() {
   return (
     <Container component="main" maxWidth="sm" sx={{ py: 6 }}>
       <Typography variant="h1" color="primary.dark" gutterBottom>
-        Talk to a person
+        Email a person
       </Typography>
       <Typography sx={{ mb: 3 }}>
-        Stuck, have a question, or not sure what fits you? A real person can
-        help.
+        Stuck, have a question, or not sure what fits you? A real Tech Fleet
+        member can help by email.
       </Typography>
 
       {contact ? (
