@@ -7,13 +7,16 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import NextLink from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { markDataDeleted } from "@/components/session-signal";
 
 type Outcome = "deleted" | "nothing" | null;
 
 const MESSAGES = {
-  deleted: "Your FirstStep data has been deleted. If you come back, you'll start fresh as a new guest.",
+  deleted: "Your FirstStep data has been deleted. You can start again as a new guest.",
   nothing: "There's no FirstStep data saved for this browser, so there was nothing to delete.",
 };
 
@@ -45,6 +48,8 @@ export default function DeleteMyData() {
       });
       if (!response.ok) throw new Error(`status ${response.status}`);
       const { result } = await response.json();
+      // Pages kept ready in the background must not show the old answers.
+      markDataDeleted();
       setOpen(false);
       setOutcome(result === "deleted" ? "deleted" : "nothing");
     } catch {
@@ -56,9 +61,14 @@ export default function DeleteMyData() {
 
   if (outcome) {
     return (
-      <Typography ref={done} tabIndex={-1} role="status" sx={{ fontWeight: 700, outline: "none" }}>
-        {MESSAGES[outcome]}
-      </Typography>
+      <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
+        <Typography ref={done} tabIndex={-1} role="status" sx={{ fontWeight: 700, outline: "none" }}>
+          {MESSAGES[outcome]}
+        </Typography>
+        <Button component={NextLink} href="/" variant="contained" sx={{ minHeight: 44 }}>
+          Start over
+        </Button>
+      </Stack>
     );
   }
 
