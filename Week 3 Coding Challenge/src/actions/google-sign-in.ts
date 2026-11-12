@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createDataClient } from "@/data/client";
-import type { GoogleMode } from "@/domain/sign-in";
+import { GOOGLE_QUERY_PARAMS, type GoogleMode } from "@/domain/sign-in";
 
 export type { GoogleMode };
 
@@ -20,6 +20,8 @@ export async function startGoogle(origin: string, mode: GoogleMode) {
     options: {
       redirectTo: `${origin}/auth/callback`,
       skipBrowserRedirect: true,
+      // Lets the member choose which Google account to use, every time.
+      queryParams: { ...GOOGLE_QUERY_PARAMS },
     },
   };
 
