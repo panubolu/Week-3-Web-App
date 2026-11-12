@@ -101,7 +101,7 @@ export default function BrowseList({ items, sample }: Props) {
                 Answer 3 questions instead
               </AppLink>
               <AppLink href="/talk-to-a-person" color="primary.dark">
-                Talk to a person
+                Email a person
               </AppLink>
             </Stack>
           </Paper>

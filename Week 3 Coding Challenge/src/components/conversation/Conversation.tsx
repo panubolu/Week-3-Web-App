@@ -309,7 +309,7 @@ export default function Conversation() {
           </AppLink>{" "}
           or{" "}
           <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
-            talk to a person
+            email a person
           </AppLink>
           . Both work even when FirstStep can&apos;t save progress.
         </Typography>
@@ -389,14 +389,23 @@ export default function Conversation() {
       >
         {!hasAnswers(state) && (
           <>
+            {/* Welcome (version 2, from the first usability test): what
+                FirstStep gives, that Tech Fleet is a nonprofit (UR-21, UR-22),
+                that help comes by email (UR-20), and a way to look around
+                first. Wording approved by Preeti on November 12, 2026. */}
             <ChatBubble from="firststep">
               Hi! I&apos;m FirstStep, an AI guide. I&apos;ll ask three short
-              questions and suggest a first step that fits you.
+              questions, which takes about 2 minutes, and suggest first steps
+              that fit you, each with a link to the official Tech Fleet page.
             </ChatBubble>
             <ChatBubble from="firststep">
-              I only use approved Tech Fleet information, and a real person is
-              available at any time. Just choose &quot;Talk to a person&quot; at
-              the top.
+              Tech Fleet is a nonprofit that helps trainees build their skills at
+              no cost. Joining, onboarding calls, observing teams and project
+              training are free; some masterclasses have a small fee.
+            </ChatBubble>
+            <ChatBubble from="firststep">
+              I only use approved Tech Fleet information. If you&apos;d like help
+              from a real person, choose &quot;Email a person&quot; at any time.
             </ChatBubble>
           </>
         )}
@@ -428,7 +437,7 @@ export default function Conversation() {
                   </AppLink>{" "}
                   or{" "}
                   <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
-                    talk to a person
+                    email a person
                   </AppLink>
                   .
                 </>
@@ -437,7 +446,7 @@ export default function Conversation() {
                 <>
                   {" "}A person can help:{" "}
                   <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
-                    Talk to a person
+                    Email a person
                   </AppLink>
                   .
                 </>
@@ -592,6 +601,26 @@ export default function Conversation() {
         </Box>
       )}
 
+      {/* Help next to where the member is working, not only in the header,
+          which is easy to miss on large screens (UR-19, ADR-0017). The
+          no-match message has its own link, so it isn't repeated there. */}
+      {!hasAnswers(state) && (
+        <Typography sx={{ mt: 2 }}>
+          Prefer to look around first?{" "}
+          <AppLink href="/browse" color="primary.dark" sx={{ fontWeight: 700 }}>
+            Browse all opportunities
+          </AppLink>
+        </Typography>
+      )}
+      {!noMatch && (
+        <Typography sx={{ mt: hasAnswers(state) ? 2 : 1 }}>
+          Need help from a real person?{" "}
+          <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
+            Email a person
+          </AppLink>
+        </Typography>
+      )}
+
       {noMatch && !editing && (
         <Typography sx={{ mt: 2 }}>
           Or{" "}
@@ -600,7 +629,7 @@ export default function Conversation() {
           </AppLink>{" "}
           and choose your own way, or{" "}
           <AppLink href="/talk-to-a-person" color="primary.dark" sx={{ fontWeight: 700 }}>
-            talk to a person
+            email a person
           </AppLink>
           .
         </Typography>
