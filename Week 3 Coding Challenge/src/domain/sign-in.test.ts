@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { primaryGoogleMode } from "./sign-in.ts";
+import { GOOGLE_QUERY_PARAMS, primaryGoogleMode } from "./sign-in.ts";
+
+test("Google always shows its account chooser", () => {
+  assert.deepEqual(GOOGLE_QUERY_PARAMS, { prompt: "select_account" });
+});
 
 test("Save my progress is the main button by default", () => {
   assert.equal(primaryGoogleMode(undefined), "save");
