@@ -8,10 +8,10 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { visuallyHidden } from "@mui/utils";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import Link from "@mui/material/Link";
 import type { InfoReply } from "@/actions/answer-typed";
 import type { ConversationView } from "@/actions/view";
 import AppLink from "@/components/AppLink";
+import ExternalLink from "@/components/ExternalLink";
 import { dataDeletions } from "@/components/session-signal";
 import { TYPED_MAX, type AnswerField, type ConversationState } from "@/domain/conversation";
 import ChatBubble from "./ChatBubble";
@@ -423,9 +423,7 @@ export default function Conversation() {
               {exchange.reply.link && (
                 <>
                   {" "}
-                  <Link href={exchange.reply.link.url} color="primary.dark" sx={{ fontWeight: 700 }}>
-                    {exchange.reply.link.label}
-                  </Link>
+                  <ExternalLink href={exchange.reply.link.url}>{exchange.reply.link.label}</ExternalLink>
                   .
                 </>
               )}

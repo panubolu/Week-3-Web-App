@@ -1,8 +1,8 @@
 import Box from "@mui/material/Box";
-import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import type { Card } from "@/actions/view";
+import ExternalLink from "@/components/ExternalLink";
 import { tokens } from "@/theme";
 
 type Props = {
@@ -67,14 +67,13 @@ export default function OpportunityCard({ card, sample, onOpen, headingLevel = "
         {checkedNote(card, sample)}
       </Typography>
 
-      <Link
+      <ExternalLink
         href={card.url}
         onClick={() => onOpen?.(card.id)}
-        color="primary.dark"
-        sx={{ display: "inline-block", minHeight: 24, lineHeight: "24px", fontWeight: 700 }}
+        sx={{ display: "inline-block", minHeight: 24, lineHeight: "24px" }}
       >
         {sample ? "Visit Tech Fleet's website" : `Open the official page for ${card.title}`}
-      </Link>
+      </ExternalLink>
     </Paper>
   );
 }
