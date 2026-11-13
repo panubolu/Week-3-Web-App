@@ -32,15 +32,26 @@
 
 ## What I Did
 
-<!-- PREETI WRITES THIS SECTION HERSELF, WITHOUT AI.
-     Write what you did in no less than 2 paragraphs. Provide full technical
-     detail so that anyone reading it can understand what exactly you did.
-     Delete this comment when you're done. -->
+Following the completion of the product requirements in Week 2, I designed the technical architecture utilizing Supabase for the database, Vercel for prototyping, and GitHub for repository management. The architecture was built upon functional and non-functional requirements, vision boards, epics, features, and tasks, with acceptance criteria playing a critical role in establishing the non-functional requirements.
+
+During Week 4, the Minimum Viable Product (MVP) was successfully developed and deployed on Vercel. Testing was conducted from the perspective of a new guest user utilizing dummy data to validate the four defined core epics. This process successfully verified guided conversation flows across both button selections and typed inputs.
+
+The web application was developed using Next.js and Material UI for the front end, Supabase for the database, and GitHub as the repository, with Vercel handling deployment. Throughout the process, Claude 5.5 Opus served as an AI coach and assistant.
+
+Managing the deployment checks on Vercel proved challenging, as every modification required pulling, merging, and redeploying the updates.
+
+Although building this for the first time presented a challenge, having clear instructions and a defined outcome made it manageable to construct incrementally, step by step.
+
+Following deployment, I conducted comprehensive usability and accessibility testing. This evaluation revealed several usability problems , which were documented in a research report. These findings were then used to refine and rebuild key areas of the application in version 2 to ensure all identified issues were resolved.
+
+Building Kanban boards, defining acceptance criteria, and detailing use cases significantly deepened my understanding of project workflows. This experience equipped me with the skills to draft and organize Kanban boards more effectively for future projects.
 
 ## What I Learned
 
-<!-- PREETI WRITES THIS SECTION HERSELF, WITHOUT AI.
-     Write what you learned in no less than 2 paragraphs. Describe the full
-     details of what you learned, what you will do differently next time, and
-     how the lessons from this exercise will help you in project team work in
-     the future. Delete this comment when you're done. -->
+Working on technical architecture for the first time initially felt overwhelming, and I felt anxious about whether I could finish this week's project work. However, taking small steps, reviewing class lecture notes, and watching recordings helped me become comfortable using Claude to ask for the right information with effective prompts.
+
+Collaborating with Claude to develop this app on Vercel was an engaging experience. By leveraging Claude's guidance and drawing upon lecture notes, homework, and example resources, I was able to make steady, incremental progress every day.
+
+For next steps if I had been given additional time, I would initiate deeper research and conduct upfront usability testing to evaluate and refine features, ensuring tighter alignment with the product's MVP.
+
+Overall, examining this tech stack provided a comprehensive overview of the technical build, highlighting the specific roles of GitHub, Vercel, Supabase, and Next.js, and demonstrating how these components work together to translate product requirements into a functional web application.
