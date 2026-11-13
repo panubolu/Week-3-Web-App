@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Container from "@mui/material/Container";
-import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
+import ExternalLink from "@/components/ExternalLink";
 import HandoffPanel from "@/components/HandoffPanel";
 import { content } from "@/data/content";
 
@@ -37,9 +37,7 @@ export default function TalkToAPersonPage() {
           </Paper>
           <Typography sx={{ mb: 3 }}>
             You can also{" "}
-            <Link href={contact.backup.url} color="primary.dark" sx={{ fontWeight: 700 }}>
-              contact {contact.backup.label}
-            </Link>
+            <ExternalLink href={contact.backup.url}>contact {contact.backup.label}</ExternalLink>
             .
           </Typography>
         </>
