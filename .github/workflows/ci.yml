@@ -1,0 +1,128 @@
+# FirstStep CI: runs on every push to any branch, and on pull requests into main.
+# Red means stop: don't merge until every check is green. Green ships: once
+# merged into main, Vercel deploys the new version (CD). See ADR-0018.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+# Read-only: the checks never need to write to the repository.
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the older, now-outdated run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: "Week 3 Coding Challenge"
+
+env:
+  NODE_VERSION: "24"
+  NEXT_TELEMETRY_DISABLED: "1"
+  # Placeholder public settings so the app can build and start. These are NOT
+  # secrets and NOT the real project: the real values live only in Vercel and
+  # .env.local. No check here talks to Supabase or Claude.
+  NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder-publishable-key
+
+jobs:
+  standards:
+    name: "1. Code standards (ESLint, TypeScript)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: "Week 3 Coding Challenge/package-lock.json"
+      - run: npm ci
+      - name: ESLint (coding rules)
+        run: npm run lint
+      - name: TypeScript (no type errors)
+        run: npm run typecheck
+
+  tests:
+    name: "2. Unit and BDD tests (Week 2 scenarios)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: "Week 3 Coding Challenge/package-lock.json"
+      - run: npm ci
+      - name: Unit, regression and BDD tests
+        run: npm test
+
+  build:
+    name: "3. Build and smoke test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: "Week 3 Coding Challenge/package-lock.json"
+      - run: npm ci
+      - name: Production build
+        run: npx next build
+      - name: Smoke test (start the app and load the main pages)
+        run: |
+          npx next start -p 3000 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/browse > /dev/null && break
+            sleep 1
+          done
+          for page in / /browse /talk-to-a-person /privacy /sign-in; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000$page")
+            echo "$page -> $code"
+            test "$code" = "200"
+          done
+          curl -s http://localhost:3000/ | grep -q "Find your first step"
+          curl -s http://localhost:3000/browse | grep -q "Browse opportunities"
+          curl -s http://localhost:3000/talk-to-a-person | grep -q "Email a person"
+          echo "Smoke test passed: the main pages load."
+
+  skills:
+    name: "4. Claude Skills gate (Week 1 skills)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Check the four Claude Skills and CLAUDE.md
+        run: npm run check-skills
+
+  security:
+    name: "5. Security (dependencies, secret files)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: "Week 3 Coding Challenge/package-lock.json"
+      - name: No high or critical vulnerabilities in app dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: No .env secret files committed
+        working-directory: .
+        run: |
+          leaked=$(git ls-files | grep -E '(^|/)\.env' | grep -v '\.env\.example$' || true)
+          if [ -n "$leaked" ]; then
+            echo "These secret files are committed and must be removed (and their keys rotated):"
+            echo "$leaked"
+            exit 1
+          fi
+          echo "No .env secret files are committed."
