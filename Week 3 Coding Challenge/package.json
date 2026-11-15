@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "node --conditions=react-server --test \"src/**/*.test.ts\"",
+    "check-skills": "node scripts/check-skills.ts",
     "rule-tests": "node --conditions=react-server --env-file=.env.local scripts/rule-tests.ts",
     "isolation-test": "node --env-file=.env.local scripts/isolation-test.ts"
   },
