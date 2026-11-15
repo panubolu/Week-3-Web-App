@@ -57,7 +57,7 @@ Design and build all of these, not just the "happy path":
 - Design mobile-first; check at 320px, 768px, and 1280px widths.
 - Touch targets comfortably large; no hover-only features.
 
-## Checklist
+## Checklist before finishing
 
 Report the result for each item in your answer:
 
