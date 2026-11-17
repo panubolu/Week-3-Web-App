@@ -126,3 +126,19 @@ jobs:
             exit 1
           fi
           echo "No .env secret files are committed."
+
+  coverage:
+    name: "6. Test coverage gate (lines 90%, branches 85%, functions 85%)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: "Week 3 Coding Challenge/package-lock.json"
+      - run: npm ci
+      # Fails the build if the tests stop covering enough of the code they load
+      # (for example, new logic added without tests). Thresholds: ADR-0018.
+      - name: Coverage stays above the line
+        run: npm run test:coverage

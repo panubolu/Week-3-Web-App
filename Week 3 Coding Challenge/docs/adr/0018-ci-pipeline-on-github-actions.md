@@ -20,7 +20,7 @@ The outcome: every push should catch new bugs and regressions before they reach 
   - Bad: Claude's own behavior and the live database rules are still checked by hand.
 
 ## Decision
-One workflow, `.github/workflows/ci.yml`, runs on every push to any branch and on pull requests into `main`, with five checks that run in parallel:
+One workflow, `.github/workflows/ci.yml`, runs on every push to any branch and on pull requests into `main`, with five checks that run in parallel (a sixth, the coverage gate, was added on November 16; see the update below):
 
 1. **Code standards:** ESLint and TypeScript (`npm run lint`, `npm run typecheck`).
 2. **Unit and BDD tests:** `npm test`, including the existing unit and regression tests and `src/bdd/week2-scenarios.test.ts`, where each test is a Week 2 use case scenario written as Given / When / Then, run against the real approved content.
@@ -40,3 +40,10 @@ The workflow has read-only permissions and uses placeholder public Supabase sett
 - Development-only tools currently have 7 moderate audit warnings, below the "high" line; review them when updating dependencies.
 - If the repository moves to a paid plan, turn on branch protection so red checks block merging automatically.
 - Because Vercel sometimes missed a merge (PRs #28 and #30), still check the Deployments page after merging.
+
+## Update, November 16, 2026: a sixth check, the test coverage gate
+Accepted by Preeti Anubolu on November 16, 2026. The "How to Create a CI / CD Pipeline on GitHub" guide lists "CI gate checks": a threshold that fails the build when a number crosses a line, such as test coverage dropping too low, added once there is a set of tests. With 102 tests, that time has come.
+
+6. **Test coverage gate:** `npm run test:coverage` runs the same tests with Node's built-in coverage (no new packages) and fails if the code the tests load drops below **90% of lines, 85% of branches, or 85% of functions**. On November 16 it measured 95.2% lines, 92.4% branches and 90.6% functions, so the lines sit a few points below today's numbers: a small change won't trip it, but new logic added without tests will. Raised to 99% as a test, it failed as expected ("95.24% line coverage does not meet threshold of 99%").
+
+Honest limit: Node only counts files the tests import (the rules in `src/domain`, `src/adapters`, `src/data` and `src/quality`). The React screens aren't loaded by unit tests, so they don't count. A screen is covered by the smoke test and the manual test cases instead. Raise the thresholds as coverage grows; never lower them just to make a red run pass.

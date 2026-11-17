@@ -10,7 +10,8 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --conditions=react-server --test \"src/**/*.test.ts\"",
-    "check-skills": "node scripts/check-skills.ts",
+    "test:coverage": "node --conditions=react-server --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" --test-coverage-lines=90 --test-coverage-branches=85 --test-coverage-functions=85 \"src/**/*.test.ts\"",
+    "check-skills":"node scripts/check-skills.ts",
     "rule-tests": "node --conditions=react-server --env-file=.env.local scripts/rule-tests.ts",
     "isolation-test": "node --env-file=.env.local scripts/isolation-test.ts"
   },
