@@ -27,7 +27,7 @@
 
 ## What I Did
 
-This week's homework centered on creating test cases for our application. After providing Claude with the assignment link, lecture notes, and week 4 product requirements, it suggested the initial two test cases. Implementing these CI/CD checks allows us to verify app features and detect functional bugs, ultimately minimizing human error and accelerating bug fixes throughout the software development lifecycle.
+This week's homework centered on creating test cases for our application. After providing Claude with the assignment link, lecture notes, and week 2 product requirements, it suggested the initial two test cases. Implementing these CI/CD checks allows us to verify app features and detect functional bugs, ultimately minimizing human error and accelerating bug fixes throughout the software development lifecycle.
 
 - **Continuous Deployment**: Ship single features incrementally and continuously.
 - **Quality Assurance**: Decrease the overall number of bugs over time.
