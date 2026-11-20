@@ -27,8 +27,27 @@
 
 ## What I Did
 
-<!-- Preeti writes this section herself, at least 2 paragraphs, without AI. -->
+This week's homework centered on creating test cases for our application. After providing Claude with the assignment link, lecture notes, and week 4 product requirements, it suggested the initial two test cases. Implementing these CI/CD checks allows us to verify app features and detect functional bugs, ultimately minimizing human error and accelerating bug fixes throughout the software development lifecycle.
+
+- **Continuous Deployment**: Ship single features incrementally and continuously.
+- **Quality Assurance**: Decrease the overall number of bugs over time.
+- **Process Efficiency**: Minimize human error within the software release cycle.
+- **Rapid Resolution**: Resolve software issues and bugs faster.
+
+I decided to move forward with the first two test cases recommended by Claude because they effectively emphasize what distinguishes this application from Fleety, the current Tech Fleet chatbot. In particular, these test cases evaluate how well the platform guides community members based on their specific skills and available time.
+
+- **Test Case 1:** Helping a career changer with limited availability find an appropriate starting point.
+- **Test Case 2:** Connecting a user to a human representative when their inquiry exceeds FirstStep's capabilities.
+
+To gain hands-on practice in writing and running test cases independently, I authored the third test case without relying on Claude. This scenario focuses on enabling users to seamlessly resume their FirstStep experience if they need to pause unexpectedly or take a break before completing all three steps.
 
 ## What I Learned
 
-<!-- Preeti writes this section herself, at least 2 paragraphs, without AI. -->
+Test case scenarios and BDD scenarios allow us to thoroughly evaluate variations within a single use case. This ensures the application fulfills all project requirements while providing a smooth user experience with minimal friction.
+
+I really enjoyed learning how to craft test cases and BDD scenarios. It was great to see how my classmates developed their own versions during class discussions.
+
+### Next Steps & Future Impact
+
+- **Earlier Testing Integration**: Moving forward, I plan to start creating test cases earlier in the development lifecycle, alongside app construction, so we can continuously validate and refine features and functionality.
+- **Long-Term Practical Application**: The experience gained from this assignment will serve as a strong foundation for designing comprehensive test cases and BDD scenarios in future project work.
