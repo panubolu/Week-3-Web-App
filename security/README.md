@@ -11,4 +11,4 @@ Week 6 Coding Challenge, **Security Test a Code Base**, for FirstStep (the Week 
 
 **Also in Notion:** the PenTest Report Template (with the PenTest Audit and PenTest Findings tables) and the FirstStep Security Requirement Specs (Week 6), one spec per fix.
 
-**At a glance:** 0 critical, 0 high, 4 medium and 13 low findings. The code's defences held (Row Level Security 26/26, prompt injection 13/13, forged tokens rejected); most findings were platform settings and design around the code. One medium finding was partly fixed during the test.
+**At a glance:** 0 critical, 0 high, 4 medium and 13 low findings. The code's defences held (Row Level Security 26/26, prompt injection 13/13, forged tokens rejected); most findings were platform settings and design around the code. One medium finding (F-15, direct database access) was fully fixed during the test.
